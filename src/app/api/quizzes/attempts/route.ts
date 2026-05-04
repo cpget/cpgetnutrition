@@ -16,7 +16,7 @@ export async function GET() {
       include: {
         quiz: { select: { title: true } }
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { submittedAt: "desc" }
     });
 
     return NextResponse.json(myAttempts);
