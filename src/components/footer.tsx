@@ -34,25 +34,13 @@ export default function Footer() {
                 cpgetnutrition@gmail.com
               </a>
             </div>
-
-            {/* Phone */}
-            <div className="flex items-center gap-3 text-slate-400">
-              <Phone className="h-4 w-4" />
-              <a 
-                href="tel:+919390042607" 
-                className="text-sm font-medium hover:text-white transition"
-              >
-                +91 9390042607
-              </a>
-            </div>
-
             {/* Instagram */}
             <div className="flex items-center gap-3 text-slate-400">
               <Instagram className="h-4 w-4" />
-              <a 
-                href="https://instagram.com/cpget_nutrition" 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href="https://instagram.com/cpget_nutrition"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="text-sm font-medium hover:text-white transition"
               >
                 @cpget_nutrition

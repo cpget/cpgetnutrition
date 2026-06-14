@@ -7,11 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { getCurrentMockLeaderboard } from "@/lib/leaderboard"
-import { 
-  HelpCircle, 
-  PenTool, 
-  BookOpen, 
-  Bell, 
+import {
+  HelpCircle,
+  PenTool,
+  BookOpen,
+  Bell,
   ArrowRight,
   LayoutDashboard,
   GraduationCap,
@@ -34,7 +34,7 @@ export default async function ClassroomHome() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-10 px-4">
-      
+
       {/* 1. Professional Header */}
       <div className="relative overflow-hidden rounded-3xl bg-slate-900 p-8 text-white shadow-xl">
         <div className="absolute -right-20 -top-20 h-80 w-80 rounded-full bg-indigo-500/10 blur-3xl" />
@@ -82,30 +82,30 @@ export default async function ClassroomHome() {
           <h3 className="font-bold text-slate-900 text-xl tracking-tight">Academic Resources</h3>
           <p className="text-sm text-slate-500">Select a module to continue</p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <QuickLink 
-            href="/classroom/live" 
-            title="Live Sessions" 
-            desc="Join interactive lectures" 
+          <QuickLink
+            href="/classroom/live"
+            title="Live Sessions"
+            desc="Join interactive lectures"
             icon={<Bell className="h-6 w-6" />} // Re-using Bell or Video for live
             color="text-red-600"
             bg="bg-red-50"
           />
 
-          <QuickLink 
-            href="/classroom/doubts" 
-            title="Doubts " 
-            desc="Query resolution portal" 
+          <QuickLink
+            href="/classroom/doubts"
+            title="Doubts "
+            desc="Query resolution portal"
             icon={<HelpCircle className="h-6 w-6" />}
             color="text-blue-600"
             bg="bg-blue-50"
           />
 
-          <QuickLink 
-            href="/classroom/quizzes" 
-            title="Mock Tests" 
-            desc="Practice and mock exams" 
+          <QuickLink
+            href="/classroom/quizzes"
+            title="Mock Tests"
+            desc="Practice and mock exams"
             icon={<PenTool className="h-6 w-6" />}
             color="text-purple-600"
             bg="bg-purple-50"
@@ -115,9 +115,9 @@ export default async function ClassroomHome() {
 
       {/* 4. Weekly Leaderboard Section */}
       <div className="space-y-6 pt-6">
-        <div className="border-b border-slate-200 pb-4">
-          <h3 className="font-bold text-slate-900 text-xl tracking-tight">Weekly Mock Test Leaderboard</h3>
-          <p className="text-sm text-slate-500">Track Top 5 performers in this week's active Mock Test</p>
+        <div className="border-b border-slate-200 dark:border-white/10 pb-4">
+          <h3 className="font-bold text-slate-900 dark:text-white text-xl tracking-tight">Top 5 Performers</h3>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Track Top 5 performers in this week's active Mock Test</p>
         </div>
 
         {!leaderboard.quiz ? (
@@ -131,8 +131,11 @@ export default async function ClassroomHome() {
           <Card className="border border-slate-200 rounded-3xl overflow-hidden shadow-sm bg-white">
             <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-6">
               <CardTitle className="text-lg font-bold text-slate-950">
-                Weekly Leaderboard: <span className="text-blue-600">{leaderboard.quiz.title}</span>
+                Top 5 Performers
               </CardTitle>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                Current Weekly Mock Test: <span className="font-semibold text-blue-600 dark:text-blue-400">{leaderboard.quiz.title}</span>
+              </p>
             </CardHeader>
             <CardContent className="p-12 text-center">
               <Trophy className="mx-auto h-12 w-12 text-slate-300 mb-3" />
@@ -143,104 +146,93 @@ export default async function ClassroomHome() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Top 5 list (takes 2 columns) */}
-            <Card className="lg:col-span-2 border border-slate-200 rounded-3xl overflow-hidden shadow-md bg-white">
-              <CardHeader className="bg-slate-50/50 border-b border-slate-100 p-6 flex flex-row items-center justify-between gap-4">
+            {/* Top 5 list (takes 3 columns if in Top 5, or 2 columns if not in Top 5) */}
+            <Card className={`${
+              leaderboard.currentStudentRank && leaderboard.currentStudentRank <= 5 
+                ? "lg:col-span-3" 
+                : "lg:col-span-2"
+            } border border-slate-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-md bg-white dark:bg-slate-900`}>
+              <CardHeader className="bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 p-6 flex flex-row items-center justify-between gap-4">
                 <div>
-                  <CardTitle className="text-lg font-bold text-slate-950">
-                    Weekly Leaderboard: <span className="text-blue-600">{leaderboard.quiz.title}</span>
+                  <CardTitle className="text-lg font-bold text-slate-950 dark:text-white">
+                    Top 5 Performers
                   </CardTitle>
-                  <p className="text-xs text-slate-400 mt-1">Showing top performers for this week's active mock test</p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                    Current Weekly Mock Test: <span className="font-semibold text-blue-600 dark:text-blue-400">{leaderboard.quiz.title}</span>
+                  </p>
                 </div>
-                <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20 font-bold shrink-0">
-                  {leaderboard.totalParticipants} Participants
+                <Badge variant="outline" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20 dark:border-blue-500/35 font-bold shrink-0">
+                  Participants: {leaderboard.totalParticipants}
                 </Badge>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {leaderboard.topFive.map((entry) => {
                     const isCurrentUser = entry.studentId === session.user.id;
-                    
+
                     return (
-                      <div 
+                      <div
                         key={entry.studentId}
                         className={`flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${
-                          isCurrentUser 
-                            ? "bg-blue-50/80 border-blue-400 shadow-sm" 
-                            : "bg-white border-slate-100 hover:border-slate-200"
+                          isCurrentUser
+                            ? "bg-blue-50/80 border-blue-400 dark:bg-blue-950/20 dark:border-blue-500/50 shadow-sm"
+                            : "bg-white border-slate-100 dark:bg-slate-900 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10"
                         }`}
                       >
                         <div className="flex items-center gap-4">
                           {/* Rank indicator */}
-                          <div className="flex items-center justify-center w-8 h-8 rounded-full font-black text-sm">
-                            {entry.rank === 1 ? (
-                              <Trophy className="h-6 w-6 text-amber-500" />
-                            ) : entry.rank === 2 ? (
-                              <Medal className="h-6 w-6 text-slate-400" />
-                            ) : entry.rank === 3 ? (
-                              <Medal className="h-6 w-6 text-amber-700" />
-                            ) : (
-                              <span className="text-slate-400 font-bold">#{entry.rank}</span>
-                            )}
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-white/5 shrink-0">
+                            <span className="text-xl font-black text-slate-700 dark:text-slate-300">
+                              #{entry.rank}
+                            </span>
                           </div>
-                          
+
                           {/* Student name */}
                           <div>
-                            <p className="font-bold text-slate-900 flex items-center gap-2">
+                            <p className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                               {entry.name}
                               {isCurrentUser && (
-                                <Badge variant="outline" className="bg-blue-600 text-white border-none text-[9px] uppercase py-0.5 px-1.5 font-extrabold tracking-wider">
+                                <Badge className="bg-blue-600 hover:bg-blue-600 text-white border-none text-[9px] uppercase py-0.5 px-1.5 font-extrabold tracking-wider">
                                   You
                                 </Badge>
                               )}
                             </p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">
-                              {entry.rank === 1 ? "Gold Medalist" : entry.rank === 2 ? "Silver Medalist" : entry.rank === 3 ? "Bronze Medalist" : "Top Contender"}
-                            </p>
                           </div>
                         </div>
 
-                        {/* Exact score details only for logged-in student */}
-                        {isCurrentUser ? (
-                          <div className="text-right">
-                            <p className="font-extrabold text-blue-600 text-lg">
-                              {entry.score}/{leaderboard.quiz?.totalQuestions}
-                            </p>
-                            <p className="text-[10px] text-slate-400 font-bold uppercase">{entry.percentage}% score</p>
-                          </div>
-                        ) : (
-                          <div className="text-right">
-                            {/* Privacy compliance: other scores locked */}
-                            <Badge variant="outline" className="border-slate-200 text-slate-400 bg-slate-50 font-semibold text-[10px]">
-                              Locked (Score Hidden)
-                            </Badge>
-                          </div>
-                        )}
+                        {/* Exact score details */}
+                        <div className="text-right">
+                          <p className="font-extrabold text-blue-600 dark:text-blue-400 text-base md:text-lg">
+                            {entry.score}/{leaderboard.quiz?.totalQuestions}
+                          </p>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase">{entry.percentage}% score</p>
+                        </div>
                       </div>
                     );
                   })}
                 </div>
 
                 {leaderboard.currentStudentRank && leaderboard.currentStudentRank <= 5 && (
-                  <div className="mt-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 text-sm font-bold flex items-center gap-2">
-                    <Trophy className="h-5 w-5 shrink-0" />
-                    <span>You are currently ranked #{leaderboard.currentStudentRank} in this week's mock test. Keep it up!</span>
+                  <div className="mt-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm font-bold flex items-center gap-2">
+                    <span>🏆</span>
+                    <span>You are currently ranked #{leaderboard.currentStudentRank} in this week's mock test.</span>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Current student performance summary (takes 1 column) */}
-            <div className="lg:col-span-1 space-y-6">
-              <Card className="border border-slate-200 rounded-3xl overflow-hidden shadow-md bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white relative">
-                <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-600/10 blur-[80px] pointer-events-none" />
-                <CardHeader className="p-6 border-b border-white/5">
-                  <CardTitle className="text-base font-bold tracking-tight uppercase text-blue-400 flex items-center gap-2">
-                    <Star className="h-4 w-4 text-blue-400" />
-                    Your Performance
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-6">
+            {/* Current student performance summary (takes 1 column if not in Top 5 or not attempted) */}
+            {(!leaderboard.currentStudentRank || leaderboard.currentStudentRank > 5) && (
+              <div className="lg:col-span-1 space-y-6">
+                <Card className="border border-slate-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-md bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white relative">
+                  <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-blue-600/10 blur-[80px] pointer-events-none" />
+                  <CardHeader className="p-6 border-b border-white/5">
+                    <CardTitle className="text-base font-bold tracking-tight uppercase text-blue-400 flex items-center gap-2">
+                      <Star className="h-4 w-4 text-blue-400" />
+                      Your Performance
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
                     {leaderboard.currentStudentRank ? (
                       <div className="space-y-4">
                         <div className="flex justify-between items-center py-2 border-b border-white/5">
@@ -253,14 +245,14 @@ export default async function ClassroomHome() {
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-white/5">
                           <span className="text-slate-300 font-medium">Percentage</span>
-                          <span className="text-xl font-bold">
+                          <span className="text-xl font-bold font-sans">
                             {Math.round(((leaderboard.currentStudentScore || 0) / (leaderboard.quiz?.totalQuestions || 1)) * 100)}%
                           </span>
                         </div>
                         <div className="flex justify-between items-center py-2 border-b border-white/5">
                           <span className="text-slate-300 font-medium">Percentile</span>
                           <span className="text-lg font-bold text-teal-400">
-                            Top {leaderboard.currentStudentTopPercentage}% of students
+                            Better than {Math.round(leaderboard.currentStudentPercentile || 0)}% of participants
                           </span>
                         </div>
                         <div className="flex justify-between items-center py-2">
@@ -268,35 +260,22 @@ export default async function ClassroomHome() {
                           <span className="text-lg font-bold">{leaderboard.totalParticipants}</span>
                         </div>
                       </div>
-                  ) : (
-                    <div className="text-center py-6">
-                      <p className="text-sm text-slate-300 font-medium">
-                        You haven't attempted this week's mock test yet.
-                      </p>
-                      <Button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold" asChild>
-                        <Link href={`/classroom/quizzes`}>
-                          Take Mock Test &rarr;
-                        </Link>
-                      </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              {/* Rules & Info Card */}
-              <Card className="border border-slate-200 rounded-3xl overflow-hidden shadow-md bg-white">
-                <CardHeader className="p-6 border-b border-slate-100">
-                  <CardTitle className="text-base font-bold text-slate-900">
-                    Leaderboard Rules
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 text-xs text-slate-500 space-y-3 leading-relaxed">
-                  <p>🥇 <strong>Rankings Update</strong>: Calculated dynamically and resets every week when a new Mock Test is activated by the faculty.</p>
-                  <p>🕒 <strong>Tie-Breaker</strong>: If scores are identical, the student with the earlier completion timestamp is ranked higher.</p>
-                  <p>🔒 <strong>Score Privacy</strong>: Exact scores of other students are kept locked to protect individual results while fostering healthy batch competition.</p>
-                </CardContent>
-              </Card>
-            </div>
+                    ) : (
+                      <div className="text-center py-6">
+                        <p className="text-sm text-slate-300 font-medium">
+                          You haven't attempted this week's mock test yet.
+                        </p>
+                        <Button className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl" asChild>
+                          <Link href={`/classroom/quizzes`}>
+                            Take Mock Test &rarr;
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         )}
       </div>
