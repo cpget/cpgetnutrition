@@ -33,6 +33,7 @@ model Quiz {
   createdAt   DateTime      @default(now())
   teacherId   String
   duration    Int           @default(30)
+  isActive    Boolean       @default(false)
   questions   Question[]
   teacher     User          @relation("TeacherQuizzes", fields: [teacherId], references: [id])
   attempts    QuizAttempt[]

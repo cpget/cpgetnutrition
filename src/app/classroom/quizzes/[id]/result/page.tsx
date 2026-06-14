@@ -30,6 +30,35 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
   const attempt = quiz.attempts[0];
   const scorePercentage = (attempt.score / quiz.questions.length) * 100;
 
+  // Retrieve ranking details only if this is the active weekly mock test
+  let rank: number | null = null;
+  let totalParticipants = 0;
+
+  if (quiz.isActive) {
+    const allAttempts = await prisma.quizAttempt.findMany({
+      where: { quizId: id },
+      select: {
+        studentId: true,
+        score: true,
+        submittedAt: true,
+      }
+    });
+
+    // Sort by score (descending) and submittedAt (ascending)
+    allAttempts.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime();
+    });
+
+    const attemptIndex = allAttempts.findIndex(a => a.studentId === session.user.id);
+    if (attemptIndex !== -1) {
+      rank = attemptIndex + 1;
+    }
+    totalParticipants = allAttempts.length;
+  }
+
   return (
     <div className="max-w-3xl mx-auto py-10 px-4 space-y-8">
       <Link href="/classroom/quizzes">
@@ -43,7 +72,14 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
         <CardContent className="pt-10 pb-10">
           <Trophy className="mx-auto h-16 w-16 mb-4 text-yellow-400" />
           <h1 className="text-4xl font-extrabold mb-2">Quiz Completed!</h1>
-          <p className="text-blue-100 mb-6 text-lg">You scored {attempt.score} out of {quiz.questions.length}</p>
+          <p className="text-blue-100 mb-4 text-lg">You scored {attempt.score} out of {quiz.questions.length}</p>
+          
+          {quiz.isActive && rank !== null && (
+            <p className="text-yellow-300 font-bold mb-6 text-sm">
+              Your Weekly Rank: #{rank} (out of {totalParticipants} participants)
+            </p>
+          )}
+
           <div className="inline-block px-6 py-2 bg-white/20 rounded-full text-2xl font-bold backdrop-blur-sm">
             {scorePercentage.toFixed(0)}%
           </div>
