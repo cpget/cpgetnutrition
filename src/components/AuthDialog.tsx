@@ -64,7 +64,7 @@ export default function AuthDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Login / Signup</Button>
+        <Button>Join the Next Batch</Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">

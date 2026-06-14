@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Users, HelpCircle, UserCheck, PlusCircle, BookOpen, Video, Megaphone } from "lucide-react"
+import { Users, HelpCircle, UserCheck, BookOpen, Video, Megaphone } from "lucide-react"
 import AnnouncementDialog from "./AnnouncementDialog"
 import { StatCard } from "./StatCard"
 
@@ -79,12 +79,6 @@ export default async function TeacherDashboard() {
             <div className="h-px flex-1 bg-gradient-to-r from-slate-200 dark:from-white/10 to-transparent ml-4" />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Button variant="outline" className="h-32 flex-col gap-3 rounded-[2rem] border-slate-200 dark:border-white/5 bg-white dark:bg-white/5 hover:bg-blue-50 dark:hover:bg-blue-500/10 group transition-all duration-300" asChild>
-              <Link href="/dashboard/teacher/assignments">
-                <PlusCircle className="h-6 w-6 text-blue-500 group-hover:scale-110 transition-transform" />
-                <span className="font-bold">Post Assignment</span>
-              </Link>
-            </Button>
             <Button variant="outline" className="h-32 flex-col gap-3 rounded-[2rem] border-slate-200 dark:border-white/5 bg-white dark:bg-white/5 hover:bg-purple-50 dark:hover:bg-purple-500/10 group transition-all duration-300" asChild>
               <Link href="/dashboard/teacher/quizzes">
                 <BookOpen className="h-6 w-6 text-purple-500 group-hover:scale-110 transition-transform" />

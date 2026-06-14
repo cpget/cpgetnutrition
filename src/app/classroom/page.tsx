@@ -77,7 +77,7 @@ export default async function ClassroomHome() {
           <p className="text-sm text-slate-500">Select a module to continue</p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <QuickLink 
             href="/classroom/live" 
             title="Live Sessions" 
@@ -103,15 +103,6 @@ export default async function ClassroomHome() {
             icon={<PenTool className="h-6 w-6" />}
             color="text-purple-600"
             bg="bg-purple-50"
-          />
-
-          <QuickLink 
-            href="/classroom/assignments" 
-            title="Assignments" 
-            desc="Manage your submissions" 
-            icon={<BookOpen className="h-6 w-6" />}
-            color="text-emerald-600"
-            bg="bg-emerald-50"
           />
         </div>
       </div>

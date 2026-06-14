@@ -19,8 +19,7 @@ import { Menu, LogOut, User } from "lucide-react"
 const links = [
   { href: "/classroom", label: "Home" },
   { href: "/classroom/live", label: "Live Classes" },
-  { href: "/classroom/quizzes", label: "Quizzes" },
-  { href: "/classroom/assignments", label: "Assignments" },
+  { href: "/classroom/quizzes", label: "Mock Test" },
   { href: "/classroom/doubts", label: "Doubts" },
 ]
 
@@ -31,12 +30,12 @@ export default function StudentNav() {
   return (
     <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
-        
+
         {/* Logo */}
         <Link href="/classroom" className="flex items-center gap-2">
-            <span className="text-2xl font-black tracking-tighter text-blue-400 ">
-      CPGET
-    </span>
+          <span className="text-2xl font-black tracking-tighter text-blue-400 ">
+            CPGET
+          </span>
         </Link>
 
         {/* Desktop nav */}
@@ -49,8 +48,8 @@ export default function StudentNav() {
                 href={l.href}
                 className={cn(
                   "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  active 
-                    ? "bg-blue-600 text-white shadow-sm" 
+                  active
+                    ? "bg-blue-600 text-white shadow-sm"
                     : "text-slate-600 hover:bg-slate-100 hover:text-blue-600"
                 )}
               >
@@ -92,8 +91,8 @@ export default function StudentNav() {
             <SheetContent side="left" className="w-[300px] sm:w-[350px]">
               <SheetHeader className="pb-6 border-b">
                 <SheetTitle className="flex items-center gap-2">
-                   <div className="h-6 w-6 rounded bg-blue-600 flex items-center justify-center text-white text-[10px]">CP</div>
-                   Classroom Menu
+                  <div className="h-6 w-6 rounded bg-blue-600 flex items-center justify-center text-white text-[10px]">CP</div>
+                  Classroom Menu
                 </SheetTitle>
               </SheetHeader>
 
@@ -145,7 +144,7 @@ export default function StudentNav() {
                       <Button className="w-full">Login</Button>
                     </Link>
                   )}
-                  
+
                   {/* Keep your custom auth button if needed */}
                   {!session && <AuthButton />}
                 </div>

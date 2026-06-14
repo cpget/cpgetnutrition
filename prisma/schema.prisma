@@ -18,14 +18,12 @@ model User {
   emailVerified  DateTime?
   accounts       Account[]
   announcements  Announcement[]
-  assignments    Assignment[]   @relation("TeacherAssignments")
   doubtsAsked    Doubt[]        @relation("StudentDoubts")
   doubtsAnswered Doubt[]        @relation("TeacherAnswers")
   liveClasses    LiveClass[]
   quizzes        Quiz[]         @relation("TeacherQuizzes")
   quizAttempts   QuizAttempt[]
   sessions       Session[]
-  submissions    Submission[]
 }
 
 model Quiz {
@@ -61,30 +59,6 @@ model QuizAttempt {
   submittedAt DateTime @default(now())
   quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
   student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-}
-
-model Assignment {
-  id          String       @id @default(uuid())
-  title       String
-  description String
-  dueDate     DateTime
-  createdAt   DateTime     @default(now())
-  teacherId   String
-  teacher     User         @relation("TeacherAssignments", fields: [teacherId], references: [id])
-  submissions Submission[]
-}
-
-model Submission {
-  id           String     @id @default(uuid())
-  content      String
-  submittedAt  DateTime   @default(now())
-  grade        Int?
-  assignmentId String
-  studentId    String
-  assignment   Assignment @relation(fields: [assignmentId], references: [id])
-  student      User       @relation(fields: [studentId], references: [id])
-
-  @@unique([assignmentId, studentId])
 }
 
 model LiveClass {

@@ -1,7 +1,7 @@
 import { SidebarLink } from "./SidebarLink"
 import { Button } from "@/components/ui/button"
 import { 
-  LayoutDashboard, BookOpen, FileText, 
+  LayoutDashboard, BookOpen, 
   Video, MessageSquare, Users, ChevronLeft 
 } from "lucide-react"
 import Link from "next/link"
@@ -34,7 +34,6 @@ export default function TeacherLayout({ children }: { children: React.ReactNode 
           
           <div className="pt-4" />
           <p className="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Academic</p>
-          <SidebarLink href="/dashboard/teacher/assignments" icon={<FileText size={20} />} label="Assignments" />
           <SidebarLink href="/dashboard/teacher/quizzes" icon={<BookOpen size={20} />} label="Mock Tests" />
           <SidebarLink href="/dashboard/teacher/live" icon={<Video size={20} />} label="Live Classes" />
         </nav>

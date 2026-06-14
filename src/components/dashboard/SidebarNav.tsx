@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils" // Shadcn helper for classes
 
 const links = [
   { name: "Overview", href: "/dashboard/teacher" },
-  { name: "Assignments", href: "/dashboard/teacher/assignments" },
   { name: "Quizzes", href: "/dashboard/teacher/quizzes" },
   { name: "Live Classes", href: "/dashboard/teacher/live-classes" },
   { name: "Doubts", href: "/dashboard/teacher/doubts" },
