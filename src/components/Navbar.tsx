@@ -29,8 +29,8 @@ export default function Navbar() {
       {/* --- DESKTOP VIEW --- */}
       <NavBody className="hidden md:flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 group shrink-0 relative z-50">
-          <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-            CPGET <span className="text-blue-600">NUTRITION</span>
+          <span className="text-2xl font-black tracking-tighter text-blue-400 ">
+            CPGET
           </span>
         </Link>
 
@@ -77,10 +77,9 @@ export default function Navbar() {
       <MobileNav className="md:hidden">
         <MobileNavHeader className="px-4 py-2 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="relative h-6 w-6 overflow-hidden rounded-md border shadow-sm">
-              <Image src="/logo.jpg" alt="Logo" fill className="object-cover" />
-            </div>
-            <span className="text-sm font-bold tracking-tight dark:text-white">CPGET</span>
+            <span className="text-2xl font-black tracking-tighter text-blue-400 ">
+              CPGET
+            </span>
           </Link>
 
           <div className="flex items-center gap-2">
