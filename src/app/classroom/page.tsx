@@ -241,27 +241,33 @@ export default async function ClassroomHome() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
-                  {leaderboard.currentStudentRank ? (
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center py-2 border-b border-white/5">
-                        <span className="text-slate-300 font-medium">Your Rank</span>
-                        <span className="text-2xl font-black text-blue-400">#{leaderboard.currentStudentRank}</span>
+                    {leaderboard.currentStudentRank ? (
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                          <span className="text-slate-300 font-medium">Your Rank</span>
+                          <span className="text-2xl font-black text-blue-400">#{leaderboard.currentStudentRank}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                          <span className="text-slate-300 font-medium">Your Score</span>
+                          <span className="text-xl font-bold">{leaderboard.currentStudentScore}/{leaderboard.quiz?.totalQuestions}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                          <span className="text-slate-300 font-medium">Percentage</span>
+                          <span className="text-xl font-bold">
+                            {Math.round(((leaderboard.currentStudentScore || 0) / (leaderboard.quiz?.totalQuestions || 1)) * 100)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-white/5">
+                          <span className="text-slate-300 font-medium">Percentile</span>
+                          <span className="text-lg font-bold text-teal-400">
+                            Top {leaderboard.currentStudentTopPercentage}% of students
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-slate-300 font-medium">Participants</span>
+                          <span className="text-lg font-bold">{leaderboard.totalParticipants}</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between items-center py-2 border-b border-white/5">
-                        <span className="text-slate-300 font-medium">Your Score</span>
-                        <span className="text-xl font-bold">{leaderboard.currentStudentScore}/{leaderboard.quiz?.totalQuestions}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-white/5">
-                        <span className="text-slate-300 font-medium">Percentage</span>
-                        <span className="text-xl font-bold">
-                          {Math.round(((leaderboard.currentStudentScore || 0) / (leaderboard.quiz?.totalQuestions || 1)) * 100)}%
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-2">
-                        <span className="text-slate-300 font-medium">Participants</span>
-                        <span className="text-lg font-bold">{leaderboard.totalParticipants}</span>
-                      </div>
-                    </div>
                   ) : (
                     <div className="text-center py-6">
                       <p className="text-sm text-slate-300 font-medium">

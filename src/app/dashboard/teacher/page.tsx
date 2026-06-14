@@ -31,6 +31,9 @@ export default async function TeacherDashboard() {
         id: true,
         title: true,
         isActive: true,
+        _count: {
+          select: { questions: true }
+        }
       }
     }),
     getCurrentMockLeaderboard()
@@ -38,6 +41,12 @@ export default async function TeacherDashboard() {
   
   const pendingCount = pendingUsers.length;
   console.log("Pending Users:", pendingUsers);
+
+  const currentActiveQuiz = leaderboard.quiz ? {
+    id: leaderboard.quiz.id,
+    title: leaderboard.quiz.title,
+    participantsCount: leaderboard.totalParticipants,
+  } : null;
 
   return (
     <div className="space-y-10 pb-20">
@@ -214,6 +223,7 @@ export default async function TeacherDashboard() {
                         <th scope="col" className="px-4 py-3">Email</th>
                         <th scope="col" className="px-4 py-3">Score</th>
                         <th scope="col" className="px-4 py-3">Percentage</th>
+                        <th scope="col" className="px-4 py-3">Percentile</th>
                         <th scope="col" className="px-4 py-3">Submitted At</th>
                       </tr>
                     </thead>
@@ -225,6 +235,7 @@ export default async function TeacherDashboard() {
                           <td className="px-4 py-3 text-slate-500 dark:text-slate-400">{entry.email}</td>
                           <td className="px-4 py-3 font-bold text-blue-600 dark:text-blue-400">{entry.score}/{leaderboard.quiz?.totalQuestions}</td>
                           <td className="px-4 py-3 font-bold">{entry.percentage}%</td>
+                          <td className="px-4 py-3 font-semibold text-teal-600 dark:text-teal-400">Top {entry.topPercentage}%</td>
                           <td className="px-4 py-3 text-xs text-slate-500">{new Date(entry.submittedAt).toLocaleTimeString()}</td>
                         </tr>
                       ))}
@@ -261,7 +272,14 @@ export default async function TeacherDashboard() {
                           </Badge>
                         ) : (
                           <div className="shrink-0">
-                            <TeacherActivateButton quizId={quiz.id} />
+                            <TeacherActivateButton 
+                              quizId={quiz.id} 
+                              title={quiz.title}
+                              isActive={quiz.isActive}
+                              questionsCount={quiz._count.questions}
+                              currentActiveQuiz={currentActiveQuiz}
+                              variant="sidebar"
+                            />
                           </div>
                         )}
                       </div>

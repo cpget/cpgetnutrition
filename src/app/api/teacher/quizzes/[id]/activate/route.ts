@@ -15,13 +15,25 @@ export async function POST(
 
     const { id } = await params
 
-    // Check if the quiz exists
+    // Check if the quiz exists and count questions
     const quizExists = await prisma.quiz.findUnique({
       where: { id },
+      include: {
+        _count: {
+          select: { questions: true }
+        }
+      }
     })
 
     if (!quizExists) {
       return NextResponse.json({ error: "Quiz not found" }, { status: 404 })
+    }
+
+    if (quizExists._count.questions === 0) {
+      return NextResponse.json(
+        { error: "This mock test contains no questions. Please add questions before activating it." },
+        { status: 400 }
+      )
     }
 
     // Set all quizzes to inactive and the selected quiz to active in a transaction

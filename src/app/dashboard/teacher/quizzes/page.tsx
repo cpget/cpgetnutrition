@@ -17,6 +17,18 @@ export default async function TeacherQuizzesPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  // Fetch currently active quiz (if any) in the system
+  const activeQuizFromDb = await prisma.quiz.findFirst({
+    where: { isActive: true },
+    include: { _count: { select: { attempts: true } } },
+  });
+
+  const currentActiveQuiz = activeQuizFromDb ? {
+    id: activeQuizFromDb.id,
+    title: activeQuizFromDb.title,
+    participantsCount: activeQuizFromDb._count.attempts,
+  } : null;
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -38,7 +50,7 @@ export default async function TeacherQuizzesPage() {
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {quizzes.map((quiz) => (
-            <QuizCard key={quiz.id} quiz={quiz} />
+            <QuizCard key={quiz.id} quiz={quiz} currentActiveQuiz={currentActiveQuiz} />
           ))}
         </div>
       )}

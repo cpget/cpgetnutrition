@@ -58,6 +58,11 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
     }
     totalParticipants = allAttempts.length;
   }
+  let topPercentage = 100;
+  if (quiz.isActive && rank !== null && totalParticipants > 0) {
+    const percentile = ((totalParticipants - rank) / totalParticipants) * 100;
+    topPercentage = Math.max(1, Math.round(100 - percentile));
+  }
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4 space-y-8">
@@ -71,17 +76,24 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
       <Card className="text-center bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-none shadow-xl">
         <CardContent className="pt-10 pb-10">
           <Trophy className="mx-auto h-16 w-16 mb-4 text-yellow-400" />
-          <h1 className="text-4xl font-extrabold mb-2">Quiz Completed!</h1>
-          <p className="text-blue-100 mb-4 text-lg">You scored {attempt.score} out of {quiz.questions.length}</p>
+          <h1 className="text-4xl font-extrabold mb-4">Quiz Completed!</h1>
           
-          {quiz.isActive && rank !== null && (
-            <p className="text-yellow-300 font-bold mb-6 text-sm">
-              Your Weekly Rank: #{rank} (out of {totalParticipants} participants)
-            </p>
-          )}
-
-          <div className="inline-block px-6 py-2 bg-white/20 rounded-full text-2xl font-bold backdrop-blur-sm">
-            {scorePercentage.toFixed(0)}%
+          <div className="space-y-3 mt-4 text-slate-100 font-medium max-w-sm mx-auto text-center p-6 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 shadow-lg">
+            <p className="text-xl font-bold text-white">Score: {attempt.score}/{quiz.questions.length}</p>
+            
+            {quiz.isActive && rank !== null && (
+              <div className="pt-3 border-t border-white/10 space-y-2">
+                <p className="flex items-center justify-center gap-2 text-lg font-bold text-yellow-300">
+                  🏆 Current Rank: #{rank}
+                </p>
+                <p className="flex items-center justify-center gap-2 text-sm text-slate-200">
+                  👥 Participants: {totalParticipants}
+                </p>
+                <p className="flex items-center justify-center gap-2 text-sm text-teal-300 font-semibold">
+                  📈 Top {topPercentage}% of students
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

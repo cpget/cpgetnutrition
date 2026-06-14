@@ -38,14 +38,21 @@ export async function POST(
       if (answers[q.id] === q.answer) score++
     })
 
-    // Create the attempt record
-    const attempt = await prisma.quizAttempt.create({
-      data: { 
-        score, 
-        quizId, 
-        studentId: session.user.id,
-        answers: answers, // CRITICAL: Save this for the Review Page
-      },
+    // Create the attempt record and lock the quiz
+    const attempt = await prisma.$transaction(async (tx) => {
+      const att = await tx.quizAttempt.create({
+        data: { 
+          score, 
+          quizId, 
+          studentId: session.user.id,
+          answers: answers, // CRITICAL: Save this for the Review Page
+        },
+      })
+      await tx.quiz.update({
+        where: { id: quizId },
+        data: { isLocked: true },
+      })
+      return att
     })
 
     return NextResponse.json({ 

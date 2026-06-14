@@ -8,6 +8,8 @@ export interface LeaderboardEntry {
   score: number
   submittedAt: Date
   percentage: number
+  percentile: number
+  topPercentage: number
 }
 
 export async function getCurrentMockLeaderboard(studentId?: string) {
@@ -58,26 +60,39 @@ export async function getCurrentMockLeaderboard(studentId?: string) {
       return new Date(a.submittedAt).getTime() - new Date(b.submittedAt).getTime()
     })
 
+    const totalParticipants = sortedAttempts.length
+
     // 4. Map to final structure with ranks
-    const mappedEntries: LeaderboardEntry[] = sortedAttempts.map((attempt, index) => ({
-      rank: index + 1,
-      studentId: attempt.student.id,
-      name: attempt.student.name,
-      email: attempt.student.email,
-      score: attempt.score,
-      submittedAt: attempt.submittedAt,
-      percentage: totalQuestions > 0 ? Math.round((attempt.score / totalQuestions) * 100) : 0,
-    }))
+    const mappedEntries: LeaderboardEntry[] = sortedAttempts.map((attempt, index) => {
+      const rank = index + 1
+      const percentile = totalParticipants > 0 ? ((totalParticipants - rank) / totalParticipants) * 100 : 0
+      const topPercentage = totalParticipants > 0 ? Math.max(1, Math.round((rank / totalParticipants) * 100)) : 100
+      return {
+        rank,
+        studentId: attempt.student.id,
+        name: attempt.student.name,
+        email: attempt.student.email,
+        score: attempt.score,
+        submittedAt: attempt.submittedAt,
+        percentage: totalQuestions > 0 ? Math.round((attempt.score / totalQuestions) * 100) : 0,
+        percentile,
+        topPercentage,
+      }
+    })
 
     // 5. Get current student details
     let currentStudentRank: number | null = null
     let currentStudentScore: number | null = null
+    let currentStudentPercentile: number | null = null
+    let currentStudentTopPercentage: number | null = null
 
     if (studentId) {
       const studentIndex = mappedEntries.findIndex(e => e.studentId === studentId)
       if (studentIndex !== -1) {
         currentStudentRank = studentIndex + 1
         currentStudentScore = mappedEntries[studentIndex].score
+        currentStudentPercentile = mappedEntries[studentIndex].percentile
+        currentStudentTopPercentage = mappedEntries[studentIndex].topPercentage
       }
     }
 
@@ -93,6 +108,8 @@ export async function getCurrentMockLeaderboard(studentId?: string) {
       topFive,
       currentStudentRank,
       currentStudentScore,
+      currentStudentPercentile,
+      currentStudentTopPercentage,
       totalParticipants: mappedEntries.length,
     }
   } catch (error) {
@@ -102,6 +119,8 @@ export async function getCurrentMockLeaderboard(studentId?: string) {
       topFive: [],
       currentStudentRank: null,
       currentStudentScore: null,
+      currentStudentPercentile: null,
+      currentStudentTopPercentage: null,
       totalParticipants: 0,
     }
   }

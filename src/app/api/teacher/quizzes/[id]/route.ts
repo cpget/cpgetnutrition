@@ -45,6 +45,22 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const quiz = await prisma.quiz.findUnique({
+      where: { id },
+      select: { isLocked: true }
+    })
+
+    if (!quiz) {
+      return NextResponse.json({ error: "Mock Test not found" }, { status: 404 })
+    }
+
+    if (quiz.isLocked) {
+      return NextResponse.json(
+        { error: "This Mock Test is locked because students have already attempted it." },
+        { status: 400 }
+      )
+    }
+
     await prisma.$transaction([
       prisma.quiz.update({
         where: { id },

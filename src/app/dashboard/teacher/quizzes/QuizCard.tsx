@@ -6,8 +6,15 @@ import { Trash2, Edit3, BarChart2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import TeacherActivateButton from "../TeacherActivateButton";
 
-export default function QuizCard({ quiz }: { quiz: any }) {
+export default function QuizCard({ 
+  quiz, 
+  currentActiveQuiz 
+}: { 
+  quiz: any; 
+  currentActiveQuiz: any; 
+}) {
   const router = useRouter();
 
   const handleDelete = async () => {
@@ -25,30 +32,24 @@ export default function QuizCard({ quiz }: { quiz: any }) {
     }
   };
 
-  const handleActivate = async () => {
-    try {
-      const res = await fetch(`/api/teacher/quizzes/${quiz.id}/activate`, { method: "POST" });
-      if (res.ok) {
-        router.refresh();
-      } else {
-        alert("Activation failed");
-      }
-    } catch (err) {
-      alert("Error activating test");
-    }
-  };
-
   return (
     <Card className={`hover:shadow-md transition-shadow relative ${quiz.isActive ? 'border-2 border-emerald-500 bg-emerald-50/10' : ''}`}>
-      {quiz.isActive && (
-        <div className="absolute top-3 right-3 z-10">
-          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 font-bold uppercase text-[9px]">
-            Active Weekly
-          </Badge>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="line-clamp-2 text-lg font-bold pr-2">{quiz.title}</CardTitle>
+          <div className="flex flex-col gap-1.5 items-end shrink-0">
+            {quiz.isActive && (
+              <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/15 font-bold uppercase text-[9px] select-none">
+                🟢 Active
+              </Badge>
+            )}
+            {quiz.isLocked && (
+              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/15 font-bold uppercase text-[9px] select-none">
+                🔒 Locked
+              </Badge>
+            )}
+          </div>
         </div>
-      )}
-      <CardHeader>
-        <CardTitle className="line-clamp-1 pr-24">{quiz.title}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex justify-between text-xs font-bold text-slate-500 uppercase tracking-tight">
@@ -64,26 +65,24 @@ export default function QuizCard({ quiz }: { quiz: any }) {
           </Button>
           <Button variant="outline" size="sm" asChild>
             <Link href={`/dashboard/teacher/quizzes/${quiz.id}/edit`}>
-              <Edit3 className="mr-2 h-4 w-4" /> Edit
+              <Edit3 className="mr-2 h-4 w-4" /> {quiz.isLocked ? "View" : "Edit"}
             </Link>
           </Button>
         </div>
 
-        {!quiz.isActive && (
-          <Button 
-            variant="default" 
-            size="sm" 
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold" 
-            onClick={handleActivate}
-          >
-            Activate as Weekly Test
-          </Button>
-        )}
+        <TeacherActivateButton
+          quizId={quiz.id}
+          title={quiz.title}
+          isActive={quiz.isActive}
+          questionsCount={quiz._count.questions}
+          currentActiveQuiz={currentActiveQuiz}
+          variant="card"
+        />
 
         <Button 
           variant="destructive" 
           size="sm" 
-          className="w-full" 
+          className="w-full cursor-pointer" 
           onClick={handleDelete}
         >
           <Trash2 className="mr-2 h-4 w-4" /> Delete Mock Test
