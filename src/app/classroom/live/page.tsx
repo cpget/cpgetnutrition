@@ -2,9 +2,19 @@ import prisma from "@/lib/prisma"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 
+export const dynamic = "force-dynamic"
+
 export default async function StudentLivePage() {
-  // Fetch the current single live class record
-  const liveClass = await prisma.liveClass.findFirst()
+  let liveClass = null
+  let errorOccurred = false
+
+  try {
+    // Fetch the current single live class record
+    liveClass = await prisma.liveClass.findFirst()
+  } catch (error) {
+    console.error("Failed to fetch live class:", error)
+    errorOccurred = true
+  }
 
   return (
     <div className="container max-w-2xl min-h-[60vh] flex flex-col justify-center py-12">
@@ -17,7 +27,13 @@ export default async function StudentLivePage() {
         </p>
       </div>
 
-      {liveClass ? (
+      {errorOccurred ? (
+        <div className="py-16 text-center border rounded-xl bg-red-50/50 border-red-200">
+          <p className="text-sm text-red-600 font-medium tracking-wide">
+            Unable to connect to the classroom database. Please try again later.
+          </p>
+        </div>
+      ) : liveClass ? (
         <Card className="border shadow-lg rounded-xl bg-white">
           <CardContent className="p-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-8">
@@ -31,14 +47,14 @@ export default async function StudentLivePage() {
               </div>
 
               <div className="w-full sm:w-auto">
-                <a 
-                  href={liveClass.meetingLink} 
-                  target="_blank" 
+                <a
+                  href={liveClass.meetingLink}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="block"
                 >
-                  <Button 
-                    size="lg" 
+                  <Button
+                    size="lg"
                     className="w-full sm:w-auto px-10 h-12 text-sm font-semibold rounded-md shadow-sm transition-all active:scale-[0.98]"
                   >
                     Join Session
