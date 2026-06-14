@@ -8,6 +8,17 @@ import { Session } from "next-auth";
 import { HoverBorderGradient } from "@/components/ui/hover-border-gradient";
 import { WavyBackground } from "@/components/ui/wavy-background";
 import { useTheme } from "next-themes";
+import AuthDialog from "@/components/AuthDialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+} from "@/components/ui/dialog"
+
+import { Loader2 } from "lucide-react"
 
 interface LandingProps {
   session: Session | null;
@@ -101,11 +112,12 @@ export default function Landing({ session }: LandingProps) {
                 </Link>
               </HoverBorderGradient>
             ) : (
-              <Link href="/auth/signup">
-                <button className="px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-lg font-bold transition-all shadow-xl shadow-blue-500/25 flex items-center gap-2 cursor-pointer">
-                  Join the Next Batch <ArrowRight className="h-5 w-5" />
-                </button>
-              </Link>
+              <DialogTrigger asChild>
+  <button className="px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-lg font-bold transition-all shadow-xl shadow-blue-500/25 flex items-center gap-2 cursor-pointer">
+    Join the Next Batch
+    <ArrowRight className="h-5 w-5" />
+  </button>
+</DialogTrigger>
             )}
           </motion.div>
         </div>

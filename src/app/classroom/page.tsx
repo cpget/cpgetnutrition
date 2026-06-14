@@ -147,11 +147,10 @@ export default async function ClassroomHome() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Top 5 list (takes 3 columns if in Top 5, or 2 columns if not in Top 5) */}
-            <Card className={`${
-              leaderboard.currentStudentRank && leaderboard.currentStudentRank <= 5 
-                ? "lg:col-span-3" 
-                : "lg:col-span-2"
-            } border border-slate-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-md bg-white dark:bg-slate-900`}>
+            <Card className={`${leaderboard.currentStudentRank && leaderboard.currentStudentRank <= 5
+              ? "lg:col-span-3"
+              : "lg:col-span-2"
+              } border border-slate-200 dark:border-white/10 rounded-3xl overflow-hidden shadow-md bg-white dark:bg-slate-900`}>
               <CardHeader className="bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5 p-6 flex flex-row items-center justify-between gap-4">
                 <div>
                   <CardTitle className="text-lg font-bold text-slate-950 dark:text-white">
@@ -173,11 +172,10 @@ export default async function ClassroomHome() {
                     return (
                       <div
                         key={entry.studentId}
-                        className={`flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${
-                          isCurrentUser
-                            ? "bg-blue-50/80 border-blue-400 dark:bg-blue-950/20 dark:border-blue-500/50 shadow-sm"
-                            : "bg-white border-slate-100 dark:bg-slate-900 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10"
-                        }`}
+                        className={`flex items-center justify-between p-4 rounded-2xl border transition-all duration-300 ${isCurrentUser
+                          ? "bg-blue-50/80 border-blue-400 dark:bg-blue-950/20 dark:border-blue-500/50 shadow-sm"
+                          : "bg-white border-slate-100 dark:bg-slate-900 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10"
+                          }`}
                       >
                         <div className="flex items-center gap-4">
                           {/* Rank indicator */}
