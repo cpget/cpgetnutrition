@@ -18,6 +18,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "CPGET NUTRITION",
   description: "Advanced Learning Platform for Nutrition Students",
+
+  verification: {
+    google: "-Kp9xxQeLx6kjkFLHIUCd4NeQQIPNYz5wXNc5jWkYug",
+  },
 };
 
 export default function RootLayout({
@@ -27,7 +31,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -36,9 +42,8 @@ export default function RootLayout({
         >
           <Providers>
             <div className="flex flex-col min-h-screen">
-              <main className="flex-grow">
-                {children}
-              </main>
+              <main className="flex-grow">{children}</main>
+
               {/* This component handles its own visibility internally */}
               <SmartFooter />
             </div>
