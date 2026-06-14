@@ -5,13 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession, signOut } from "next-auth/react";
 
-import { 
-  Navbar as AceternityNavbar, 
-  NavBody, 
-  MobileNav, 
-  MobileNavHeader, 
-  MobileNavToggle, 
-  MobileNavMenu 
+import {
+  Navbar as AceternityNavbar,
+  NavBody,
+  MobileNav,
+  MobileNavHeader,
+  MobileNavToggle,
+  MobileNavMenu
 } from "@/components/ui/resizable-navbar";
 import AuthDialog from "@/components/AuthDialog";
 import { Button } from "@/components/ui/button";
@@ -28,11 +28,7 @@ export default function Navbar() {
     <AceternityNavbar className="top-0 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">
       {/* --- DESKTOP VIEW --- */}
       <NavBody className="hidden md:flex items-center justify-between">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group shrink-0 relative z-50">
-          <div className="relative h-7 w-7 overflow-hidden rounded-md border shadow-sm">
-            <Image src="/logo.jpg" alt="Logo" fill className="object-cover" />
-          </div>
           <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
             CPGET <span className="text-blue-600">NUTRITION</span>
           </span>
@@ -42,15 +38,15 @@ export default function Navbar() {
         <div className="flex items-center gap-4 relative z-50">
           {/* Toggle Moved Beside Auth Buttons */}
           <ThemeToggle />
-          
+
           <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800 mx-2" />
 
           {status === "loading" ? (
             <div className="h-8 w-20 animate-pulse rounded-full bg-slate-100 dark:bg-slate-800" />
           ) : isAuthed ? (
             <div className="flex items-center gap-6">
-              <Link 
-                href={dashboardHref} 
+              <Link
+                href={dashboardHref}
                 className="text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-2"
               >
                 <LayoutDashboard className="h-4 w-4" />
@@ -86,12 +82,12 @@ export default function Navbar() {
             </div>
             <span className="text-sm font-bold tracking-tight dark:text-white">CPGET</span>
           </Link>
-          
+
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <MobileNavToggle 
-              isOpen={isMobileMenuOpen} 
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
+            <MobileNavToggle
+              isOpen={isMobileMenuOpen}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             />
           </div>
         </MobileNavHeader>
@@ -107,8 +103,8 @@ export default function Navbar() {
                 <Button asChild className="w-full bg-blue-600 h-12 rounded-xl text-white">
                   <Link href={dashboardHref} onClick={() => setIsMobileMenuOpen(false)}>Go to Dashboard</Link>
                 </Button>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full h-12 rounded-xl text-red-600 border-red-100 dark:border-red-900/30"
                   onClick={() => signOut({ callbackUrl: "/" })}
                 >
@@ -117,8 +113,8 @@ export default function Navbar() {
               </>
             ) : (
               <div className="flex flex-col gap-2">
-                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium px-2 mb-2 text-center">Join the Nutrition Portal</p>
-                 <AuthDialog />
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium px-2 mb-2 text-center">Join the Nutrition Portal</p>
+                <AuthDialog />
               </div>
             )}
           </div>
