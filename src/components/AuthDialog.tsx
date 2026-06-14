@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dialog"
 
 import { Button } from "@/components/ui/button"
-import { Loader2 } from "lucide-react"
+import { Loader2, ArrowRight } from "lucide-react"
 
 export default function AuthDialog() {
   const [view, setView] = useState<"login" | "pending">("login")
@@ -64,18 +64,21 @@ export default function AuthDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Join the Next Batch</Button>
+        <button className="px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-lg font-bold transition-all shadow-xl shadow-blue-500/25 flex items-center gap-2 cursor-pointer">
+          Join the Next Batch
+          <ArrowRight className="h-5 w-5" />
+        </button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl">
         <DialogHeader>
-          <DialogTitle>
-            {view === "pending" ? "Access Pending" : "Welcome back"}
+          <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+            {view === "pending" ? "Access Pending" : "Join the Next Batch"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm text-slate-500 dark:text-slate-400 mt-2">
             {view === "pending"
               ? "Your account is waiting for admin approval."
-              : "Login quickly and securely with Google."}
+              : "Continue with Google to access classes, mock tests, and doubt sessions."}
           </DialogDescription>
         </DialogHeader>
 
@@ -87,7 +90,7 @@ export default function AuthDialog() {
               onClick={handleGoogleLogin}
               disabled={loading}
               variant="outline"
-              className="w-full h-12 font-semibold border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="w-full h-12 font-semibold border-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -117,13 +120,12 @@ export default function AuthDialog() {
                       d="M12 5.38c1.62 0 3.06.56 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06L5.85 9.9c.87-2.6 3.29-4.52 6.15-4.52z"
                     />
                   </svg>
-
                   Continue with Google
                 </>
               )}
             </Button>
           ) : (
-            <Button onClick={handleSignOut} variant="secondary" disabled={loading} className="w-full h-11 border">
+            <Button onClick={handleSignOut} variant="secondary" disabled={loading} className="w-full h-11 border cursor-pointer">
               {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               Sign Out / Back
             </Button>
