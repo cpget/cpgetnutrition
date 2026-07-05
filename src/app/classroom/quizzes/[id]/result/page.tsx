@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, XCircle, ArrowLeft, Trophy } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowLeft, Trophy, Percent } from "lucide-react";
 import Link from "next/link";
 
 export default async function QuizResultPage({ params }: { params: Promise<{ id: string }> }) {
@@ -28,7 +28,11 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
   if (!quiz || quiz.attempts.length === 0) notFound();
 
   const attempt = quiz.attempts[0];
-  const scorePercentage = (attempt.score / quiz.questions.length) * 100;
+  const scorePercentage = Math.round((attempt.score / quiz.questions.length) * 100);
+
+  // Safely extract student selections from the database record
+  // Assumes a JSON column structure like: { "question_id_1": "B", "question_id_2": "C" }
+  const studentSelections = (attempt as any).selectedAnswers || {};
 
   // Retrieve ranking details only if this is the active weekly mock test
   let rank: number | null = null;
@@ -44,7 +48,6 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
       }
     });
 
-    // Sort by score (descending) and submittedAt (ascending)
     allAttempts.sort((a, b) => {
       if (b.score !== a.score) {
         return b.score - a.score;
@@ -58,6 +61,7 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
     }
     totalParticipants = allAttempts.length;
   }
+
   let topPercentage = 100;
   if (quiz.isActive && rank !== null && totalParticipants > 0) {
     const percentile = ((totalParticipants - rank) / totalParticipants) * 100;
@@ -65,76 +69,126 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4 space-y-8">
+    <div className="max-w-4xl mx-auto py-10 px-4 space-y-8">
       <Link href="/classroom/quizzes">
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" className="hover:bg-slate-100">
           <ArrowLeft className="mr-2 h-4 w-4" /> Back to Quizzes
         </Button>
       </Link>
 
-      {/* Score Header */}
-      <Card className="text-center bg-gradient-to-br from-blue-600 to-indigo-700 text-white border-none shadow-xl">
-        <CardContent className="pt-10 pb-10">
-          <Trophy className="mx-auto h-16 w-16 mb-4 text-yellow-400" />
-          <h1 className="text-4xl font-extrabold mb-4">Quiz Completed!</h1>
-          
-          <div className="space-y-3 mt-4 text-slate-100 font-medium max-w-sm mx-auto text-center p-6 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 shadow-lg">
-            <p className="text-xl font-bold text-white">Score: {attempt.score}/{quiz.questions.length}</p>
-            
-            {quiz.isActive && rank !== null && (
-              <div className="pt-3 border-t border-white/10 space-y-2">
-                <p className="flex items-center justify-center gap-2 text-lg font-bold text-yellow-300">
-                  🏆 Current Rank: #{rank}
-                </p>
-                <p className="flex items-center justify-center gap-2 text-sm text-slate-200">
-                  👥 Participants: {totalParticipants}
-                </p>
-                <p className="flex items-center justify-center gap-2 text-sm text-teal-300 font-semibold">
-                  📈 Top {topPercentage}% of students
-                </p>
-              </div>
-            )}
+      {/* Modern Dashboard-Style Hero Score Header */}
+      <Card className="overflow-hidden border-none shadow-xl bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 text-white relative">
+        <CardContent className="pt-10 pb-10 flex flex-col md:flex-row items-center justify-between gap-8 px-8 relative z-10">
+          <div className="space-y-3 text-center md:text-left">
+            <span className="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase">
+              Performance Review
+            </span>
+            <h1 className="text-4xl font-black tracking-tight">Quiz Completed!</h1>
+            <p className="text-indigo-200 text-sm max-w-md">
+              Review your submission below. Correct metrics and incorrect traps are highlighted to aid your study.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
+            <div className="bg-white/5 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center min-w-[140px]">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Score</p>
+              <p className="text-2xl font-bold text-white">{attempt.score} / {quiz.questions.length}</p>
+            </div>
+            <div className="bg-white/5 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center min-w-[140px]">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Accuracy</p>
+              <p className="text-2xl font-bold text-teal-400 flex items-center justify-center gap-1">
+                <Percent className="h-5 w-5" /> {scorePercentage}%
+              </p>
+            </div>
           </div>
         </CardContent>
+
+        {quiz.isActive && rank !== null && (
+          <div className="bg-white/5 border-t border-white/10 px-8 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-left text-sm font-medium">
+            <div className="flex items-center justify-center sm:justify-start gap-2 text-yellow-400">
+              🏆 Current Rank: <span className="font-bold text-white">#{rank}</span>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-slate-300">
+              👥 Participants: <span className="font-bold text-white">{totalParticipants}</span>
+            </div>
+            <div className="flex items-center justify-center sm:justify-end gap-2 text-teal-400">
+              📈 Standing: <span className="font-bold text-white">Top {topPercentage}%</span>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Questions Review */}
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold">Review Answers</h2>
-        {quiz.questions.map((q, idx) => (
-          <Card key={q.id} className="overflow-hidden border-l-4 border-l-slate-200">
-            <CardHeader className="bg-slate-50/50 py-4">
-              <CardTitle className="text-base font-semibold">
-                {idx + 1}. {q.question}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-              {(['A', 'B', 'C', 'D'] as const).map((letter) => {
-                const isCorrect = q.answer === letter;
-                // Note: To show "Your Answer", we would need to store student selections in DB. 
-                // For now, we highlight the correct one.
-                return (
-                  <div 
-                    key={letter}
-                    className={`flex items-center gap-3 p-3 rounded-md border text-sm ${
-                      isCorrect 
-                        ? "bg-green-50 border-green-200 text-green-800" 
-                        : "bg-white border-slate-100 text-slate-500"
-                    }`}
-                  >
-                    <span className={`w-6 h-6 flex items-center justify-center rounded-full text-[10px] font-bold ${
-                      isCorrect ? "bg-green-500 text-white" : "bg-slate-100"
-                    }`}>
-                      {letter}
-                    </span>
-                    {q[`option${letter}` as keyof typeof q]}
-                    {isCorrect && <CheckCircle2 className="ml-auto h-4 w-4 text-green-600" />}
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        ))}
+        <h2 className="text-2xl font-bold text-slate-900">Review Answers</h2>
+
+        {quiz.questions.map((q, idx) => {
+          const studentSelection = studentSelections[q.id];
+          const isCorrectSubmission = studentSelection === q.answer;
+
+          return (
+            <Card
+              key={q.id}
+              className={`overflow-hidden border-l-4 transition-all duration-200 ${!studentSelection
+                  ? "border-l-slate-300"
+                  : isCorrectSubmission
+                    ? "border-l-emerald-500 shadow-sm"
+                    : "border-l-rose-500 shadow-sm"
+                }`}
+            >
+              <CardHeader className="bg-slate-50/60 py-4">
+                <CardTitle className="text-base font-semibold leading-relaxed text-slate-800 flex items-start gap-2">
+                  <span className="text-slate-400 font-mono">{idx + 1}.</span>
+                  <span className="flex-1">{q.question}</span>
+                </CardTitle>
+              </CardHeader>
+
+              <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {(['A', 'B', 'C', 'D'] as const).map((letter) => {
+                  const isSystemCorrectOption = q.answer === letter;
+                  const isOptionSelectedByStudent = studentSelection === letter;
+
+                  // Define standard UI values
+                  let cardStyle = "bg-white border-slate-200 text-slate-700 hover:bg-slate-50/50";
+                  let badgeStyle = "bg-slate-100 text-slate-600";
+                  let statusLabel = null;
+
+                  // Apply highlighted status values dynamically
+                  if (isSystemCorrectOption) {
+                    cardStyle = "bg-emerald-50/70 border-emerald-300 text-emerald-900 font-medium";
+                    badgeStyle = "bg-emerald-500 text-white";
+                    statusLabel = (
+                      <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1 bg-emerald-100/50 px-2 py-0.5 rounded-md ml-auto">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Correct Answer
+                      </span>
+                    );
+                  } else if (isOptionSelectedByStudent && !isSystemCorrectOption) {
+                    cardStyle = "bg-rose-50 border-rose-200 text-rose-900";
+                    badgeStyle = "bg-rose-500 text-white";
+                    statusLabel = (
+                      <span className="text-xs font-semibold text-rose-600 flex items-center gap-1 bg-rose-100/50 px-2 py-0.5 rounded-md ml-auto">
+                        <XCircle className="h-3.5 w-3.5" /> Your Choice
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={letter}
+                      className={`flex items-center gap-3 p-3.5 rounded-xl border text-sm transition-colors ${cardStyle}`}
+                    >
+                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-[11px] font-bold shrink-0 ${badgeStyle}`}>
+                        {letter}
+                      </span>
+                      <span className="pr-2 break-words">{q[`option${letter}` as keyof typeof q]}</span>
+                      {statusLabel}
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );
