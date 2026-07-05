@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -23,8 +23,12 @@ interface QuestionData {
 
 export default function EditMockTestForm({ initialData }: { initialData: any }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const forceEdit = searchParams.get("edit") === "true"
+  const isLocked = !!initialData.isLocked && !forceEdit
+  
   const [loading, setLoading] = useState(false)
-  const isLocked = !!initialData.isLocked;
+  const [isDraftState, setIsDraftState] = useState(initialData.isDraft ?? false)
   
   const [formData, setFormData] = useState({
     title: initialData.title,
@@ -61,7 +65,7 @@ export default function EditMockTestForm({ initialData }: { initialData: any }) 
       const res = await fetch(`/api/teacher/quizzes/${initialData.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, questions }),
+        body: JSON.stringify({ ...formData, questions, isDraft: isDraftState }),
       })
 
       if (res.ok) {
@@ -82,13 +86,17 @@ export default function EditMockTestForm({ initialData }: { initialData: any }) 
   return (
     <form onSubmit={handleUpdate} className="space-y-8 pb-20">
       {/* Locked Warning Banner */}
-      {isLocked && (
+      {initialData.isLocked && (
         <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 p-5 rounded-3xl flex items-start gap-4 text-amber-800 dark:text-amber-300 shadow-sm animate-pulse-subtle">
           <span className="text-xl leading-none">🔒</span>
           <div>
-            <p className="font-extrabold text-sm uppercase tracking-wide">Mock Test Locked</p>
+            <p className="font-extrabold text-sm uppercase tracking-wide">
+              {forceEdit ? "Mock Test Locked (Edit Mode)" : "Mock Test Locked"}
+            </p>
             <p className="text-xs mt-1 leading-relaxed text-amber-700/80 dark:text-amber-400/80">
-              This mock test has already received student attempts. To protect leaderboard and grade integrity, editing questions, answers, timing, or description has been disabled.
+              {forceEdit 
+                ? "This test has attempts, but you are in Edit Mode. Changes here will take effect immediately. Please be careful to not disrupt grade/leaderboard integrity."
+                : "This mock test has already received student attempts. To protect leaderboard and grade integrity, editing questions, answers, timing, or description has been disabled."}
             </p>
           </div>
         </div>
@@ -128,6 +136,19 @@ export default function EditMockTestForm({ initialData }: { initialData: any }) 
               onChange={(e) => setFormData({...formData, description: e.target.value})} 
               disabled={isLocked}
             />
+          </div>
+          <div className="flex items-center gap-2 pt-2">
+            <input 
+              id="isDraft"
+              type="checkbox"
+              checked={isDraftState}
+              onChange={(e) => setIsDraftState(e.target.checked)}
+              disabled={isLocked}
+              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            />
+            <Label htmlFor="isDraft" className="text-sm font-semibold text-slate-700 cursor-pointer select-none">
+              Keep as Draft (students won't see this test)
+            </Label>
           </div>
         </CardContent>
       </Card>

@@ -13,6 +13,9 @@ export default async function StudentQuizzes() {
 
   // Fetch quizzes and check if the student has already attempted them
   const quizzes = await prisma.quiz.findMany({
+    where: {
+      isDraft: false
+    },
     include: {
       attempts: {
         where: { studentId: session.user.id }

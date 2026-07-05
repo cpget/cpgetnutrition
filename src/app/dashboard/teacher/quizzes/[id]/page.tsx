@@ -47,28 +47,43 @@ export default async function TeacherQuizDetailsPage({ params }: { params: Promi
                   <th className="text-left pb-3">Rank</th>
                   <th className="text-left pb-3">Student</th>
                   <th className="text-left pb-3">Score</th>
+                  <th className="text-left pb-3">Tab Switches</th>
                   <th className="text-left pb-3">Date</th>
                 </tr>
               </thead>
               <tbody>
-                {quiz.attempts.map((attempt, index) => (
-                  <tr key={attempt.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
-                    <td className="py-4 font-bold text-slate-400">#{index + 1}</td>
-                    <td className="py-4 font-medium">{attempt.student.name}</td>
-                    <td className="py-4">
-                      <Badge variant={attempt.score > quiz.questions.length / 2 ? "default" : "destructive"}>
-                        {attempt.score} / {quiz.questions.length}
-                      </Badge>
-                    </td>
-                    <td className="py-4 text-slate-500">
-                      {new Date(attempt.submittedAt).toLocaleDateString('en-US', {
-                           month: 'short',
-                           day: '2-digit',
-                           year: 'numeric'
-                        })}
-                    </td>
-                  </tr>
-                ))}
+                {quiz.attempts.map((attempt, index) => {
+                  const rawAns = (attempt.answers as any) || {}
+                  const switchCount = rawAns?._metadata?.tabSwitchCount ?? 0
+
+                  return (
+                    <tr key={attempt.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
+                      <td className="py-4 font-bold text-slate-400">#{index + 1}</td>
+                      <td className="py-4 font-medium">{attempt.student.name}</td>
+                      <td className="py-4">
+                        <Badge variant={attempt.score > quiz.questions.length / 2 ? "default" : "destructive"}>
+                          {attempt.score} / {quiz.questions.length}
+                        </Badge>
+                      </td>
+                      <td className="py-4">
+                        {switchCount > 0 ? (
+                          <span className="px-2.5 py-1 bg-red-100 text-red-700 rounded-full font-extrabold text-xs inline-flex items-center gap-1 border border-red-200">
+                            ⚠ {switchCount} warning{switchCount > 1 ? "s" : ""}
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold text-slate-400">None</span>
+                        )}
+                      </td>
+                      <td className="py-4 text-slate-500">
+                        {new Date(attempt.submittedAt).toLocaleDateString('en-US', {
+                             month: 'short',
+                             day: '2-digit',
+                             year: 'numeric'
+                          })}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
             {quiz.attempts.length === 0 && (

@@ -35,6 +35,7 @@ model Quiz {
   duration    Int           @default(30)
   isActive    Boolean       @default(false)
   isLocked    Boolean       @default(false)
+  isDraft     Boolean       @default(false)
   questions   Question[]
   teacher     User          @relation("TeacherQuizzes", fields: [teacherId], references: [id])
   attempts    QuizAttempt[]

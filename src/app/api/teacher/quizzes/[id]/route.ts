@@ -39,7 +39,7 @@ export async function PUT(
   try {
     const session = await getServerSession(authOptions)
     const { id } = await params
-    const { title, description, duration, questions } = await req.json()
+    const { title, description, duration, questions, isDraft } = await req.json()
 
     if (!session || session.user.role !== "TEACHER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -54,17 +54,15 @@ export async function PUT(
       return NextResponse.json({ error: "Mock Test not found" }, { status: 404 })
     }
 
-    if (quiz.isLocked) {
-      return NextResponse.json(
-        { error: "This Mock Test is locked because students have already attempted it." },
-        { status: 400 }
-      )
-    }
-
     await prisma.$transaction([
       prisma.quiz.update({
         where: { id },
-        data: { title, description, duration: parseInt(duration) }
+        data: { 
+          title, 
+          description, 
+          duration: parseInt(duration),
+          isDraft: isDraft === true
+        }
       }),
       prisma.question.deleteMany({ where: { quizId: id } }),
       prisma.question.createMany({

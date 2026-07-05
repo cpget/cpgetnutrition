@@ -35,7 +35,7 @@ export default function CreateQuizPage() {
     setQuestions(newQs)
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (isDraft: boolean) => {
     if (!title.trim()) return alert("Please enter a Quiz Title")
     if (!duration || parseInt(duration) <= 0) return alert("Please enter a valid duration (minutes)")
     if (questions.some(q => !q.question.trim())) return alert("Please fill in all question texts")
@@ -49,7 +49,8 @@ export default function CreateQuizPage() {
           title, 
           description, 
           duration: parseInt(duration), // ✅ Sending duration to backend
-          questions 
+          questions,
+          isDraft
         }),
       })
 
@@ -58,7 +59,7 @@ export default function CreateQuizPage() {
         router.refresh()
       } else {
         const data = await res.json()
-        alert(data.error || "Failed to publish quiz")
+        alert(data.error || "Failed to save quiz")
       }
     } catch (error) {
       alert("Network error. Check your server console.")
@@ -80,9 +81,14 @@ export default function CreateQuizPage() {
           <h1 className="text-3xl font-bold tracking-tight">Create Mock Test </h1>
           <p className="text-muted-foreground text-sm">Design your assessment for CPGET students.</p>
         </div>
-        <Button onClick={handleSubmit} disabled={loading} className="px-8 bg-blue-600 hover:bg-blue-700">
-          {loading ? "Publishing..." : "Publish Quiz"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => handleSubmit(true)} disabled={loading} variant="outline" className="px-6 border-slate-200">
+            {loading ? "Saving..." : "Save as Draft"}
+          </Button>
+          <Button onClick={() => handleSubmit(false)} disabled={loading} className="px-6 bg-blue-600 hover:bg-blue-700">
+            {loading ? "Publishing..." : "Publish Test"}
+          </Button>
+        </div>
       </div>
 
       <Card>

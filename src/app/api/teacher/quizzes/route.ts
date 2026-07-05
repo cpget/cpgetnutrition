@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
 
     // 2. Extract data including 'duration'
-    const { title, description, duration, questions } = await req.json()
+    const { title, description, duration, questions, isDraft } = await req.json()
 
     // 3. Validate input
     if (!title || !questions || !Array.isArray(questions) || questions.length === 0) {
@@ -33,6 +33,7 @@ export async function POST(req: Request) {
         description,
         // Convert duration to number, default to 30 if missing
         duration: parseInt(duration) || 30,
+        isDraft: isDraft === true, // Save draft state
         teacher: {
           connect: { id: session.user.id }
         },
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
       }
     })
 
-    console.log(`✅ Quiz Created: "${title}" with ${questions.length} questions and ${duration}min timer.`);
+    console.log(`✅ Quiz Created: "${title}" (Draft: ${isDraft}) with ${questions.length} questions and ${duration}min timer.`);
 
     return NextResponse.json(quiz)
 
