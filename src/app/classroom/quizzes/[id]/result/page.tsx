@@ -31,8 +31,20 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
   const scorePercentage = Math.round((attempt.score / quiz.questions.length) * 100);
 
   // Safely extract student selections from the database record
-  // Assumes a JSON column structure like: { "question_id_1": "B", "question_id_2": "C" }
-  const studentSelections = (attempt as any).selectedAnswers || {};
+  // Handles both string-only answers and detailed object answers
+  const rawAnswers = (attempt.answers as Record<string, any>) || {};
+  const studentSelections: Record<string, string> = {};
+  const markedReviewSelections: Record<string, boolean> = {};
+
+  Object.entries(rawAnswers).forEach(([qId, val]) => {
+    if (val && typeof val === "object" && "selectedAnswer" in val) {
+      studentSelections[qId] = val.selectedAnswer || "";
+      markedReviewSelections[qId] = !!val.isMarkedForReview;
+    } else {
+      studentSelections[qId] = typeof val === "string" ? val : "";
+      markedReviewSelections[qId] = false;
+    }
+  });
 
   // Retrieve ranking details only if this is the active weekly mock test
   let rank: number | null = null;
@@ -88,7 +100,7 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
               Review your submission below. Correct metrics and incorrect traps are highlighted to aid your study.
             </p>
           </div>
-
+          
           <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
             <div className="bg-white/5 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center min-w-[140px]">
               <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Score</p>
@@ -121,28 +133,35 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
       {/* Questions Review */}
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-slate-900">Review Answers</h2>
-
+        
         {quiz.questions.map((q, idx) => {
           const studentSelection = studentSelections[q.id];
+          const isMarkedForReview = !!markedReviewSelections[q.id];
           const isCorrectSubmission = studentSelection === q.answer;
 
           return (
-            <Card
-              key={q.id}
-              className={`overflow-hidden border-l-4 transition-all duration-200 ${!studentSelection
-                  ? "border-l-slate-300"
-                  : isCorrectSubmission
-                    ? "border-l-emerald-500 shadow-sm"
+            <Card 
+              key={q.id} 
+              className={`overflow-hidden border-l-4 transition-all duration-200 ${
+                !studentSelection
+                  ? "border-l-slate-300" 
+                  : isCorrectSubmission 
+                    ? "border-l-emerald-500 shadow-sm" 
                     : "border-l-rose-500 shadow-sm"
-                }`}
+              }`}
             >
               <CardHeader className="bg-slate-50/60 py-4">
                 <CardTitle className="text-base font-semibold leading-relaxed text-slate-800 flex items-start gap-2">
                   <span className="text-slate-400 font-mono">{idx + 1}.</span>
                   <span className="flex-1">{q.question}</span>
+                  {isMarkedForReview && (
+                    <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider shrink-0 border border-amber-200">
+                      Marked for Review
+                    </span>
+                  )}
                 </CardTitle>
               </CardHeader>
-
+              
               <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                 {(['A', 'B', 'C', 'D'] as const).map((letter) => {
                   const isSystemCorrectOption = q.answer === letter;
@@ -173,8 +192,8 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
                   }
 
                   return (
-                    <div
-                      key={letter}
+                    <div 
+                      key={letter} 
                       className={`flex items-center gap-3 p-3.5 rounded-xl border text-sm transition-colors ${cardStyle}`}
                     >
                       <span className={`w-6 h-6 flex items-center justify-center rounded-full text-[11px] font-bold shrink-0 ${badgeStyle}`}>

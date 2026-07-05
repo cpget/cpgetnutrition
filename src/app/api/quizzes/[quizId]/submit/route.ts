@@ -35,7 +35,11 @@ export async function POST(
     // Server-side score calculation
     let score = 0
     quiz.questions.forEach((q) => {
-      if (answers[q.id] === q.answer) score++
+      const userAns = answers[q.id]
+      const selectedOption = typeof userAns === 'object' && userAns !== null 
+        ? (userAns as any).selectedAnswer 
+        : userAns
+      if (selectedOption === q.answer) score++
     })
 
     // Create the attempt record and lock the quiz

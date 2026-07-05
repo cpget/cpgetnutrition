@@ -2,12 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Label } from "@/components/ui/label"
-import { Progress } from "@/components/ui/progress"
-import { ChevronLeft, ChevronRight, Send, Loader2, Clock, AlertTriangle } from "lucide-react"
+import { Loader2, Check, AlertTriangle } from "lucide-react"
 
 interface Question {
   id: string
@@ -27,12 +22,26 @@ interface Quiz {
 export default function QuizPlayer({ quiz, duration }: { quiz: Quiz, duration: number }) {
   const router = useRouter()
   
-  // Quiz State
+  // Active Question Index
   const [currentIdx, setCurrentIdx] = useState(0)
+  
+  // Selected Answers (questionId -> Option Letter)
   const [answers, setAnswers] = useState<Record<string, string>>({})
+  
+  // Marked for Review State (questionId -> boolean)
+  const [markedForReview, setMarkedForReview] = useState<Record<string, boolean>>({})
+  
+  // Visited State (questionId -> boolean)
+  const [visited, setVisited] = useState<Record<string, boolean>>(() => {
+    if (quiz.questions.length > 0) {
+      return { [quiz.questions[0].id]: true }
+    }
+    return {}
+  })
+  
   const [submitting, setSubmitting] = useState(false)
   
-  // ⏱️ Timer State (Minutes to Seconds)
+  // Timer State (Seconds remaining)
   const [timeLeft, setTimeLeft] = useState(duration * 60)
 
   // 1. Memoized Submission Logic
@@ -44,29 +53,41 @@ export default function QuizPlayer({ quiz, duration }: { quiz: Quiz, duration: n
       const answeredCount = Object.keys(answers).length
       if (answeredCount < quiz.questions.length) {
         if (!confirm(`You've answered ${answeredCount}/${quiz.questions.length}. Submit anyway?`)) return
+      } else {
+        if (!confirm("Are you sure you want to submit your test?")) return
       }
     }
 
     setSubmitting(true)
     try {
+      // Map selections to the new schema format: { [id]: { selectedAnswer, isMarkedForReview } }
+      const submissionAnswers: Record<string, { selectedAnswer: string, isMarkedForReview: boolean }> = {}
+      quiz.questions.forEach((q) => {
+        submissionAnswers[q.id] = {
+          selectedAnswer: answers[q.id] || "",
+          isMarkedForReview: !!markedForReview[q.id]
+        }
+      })
+
       const res = await fetch(`/api/quizzes/${quiz.id}/submit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers }),
+        body: JSON.stringify({ answers: submissionAnswers }),
       })
 
       if (res.ok) {
         router.push(`/classroom/quizzes/${quiz.id}/result`)
         router.refresh()
       } else {
-        alert("Submission failed. Please check your connection.")
+        const errData = await res.json()
+        alert(errData.error || "Submission failed. Please check your connection.")
         setSubmitting(false)
       }
     } catch (e) {
-      alert("An error occurred.")
+      alert("An error occurred during submission.")
       setSubmitting(false)
     }
-  }, [answers, quiz, router, submitting])
+  }, [answers, markedForReview, quiz, router, submitting])
 
   // 2. Timer Effect
   useEffect(() => {
@@ -82,127 +103,354 @@ export default function QuizPlayer({ quiz, duration }: { quiz: Quiz, duration: n
     return () => clearInterval(timer)
   }, [timeLeft, finishQuiz])
 
-  // Helpers for UI
+  // 3. Mark current question as visited
+  useEffect(() => {
+    if (quiz.questions.length > 0 && quiz.questions[currentIdx]) {
+      const activeId = quiz.questions[currentIdx].id
+      setVisited((prev) => {
+        if (prev[activeId]) return prev
+        return { ...prev, [activeId]: true }
+      })
+    }
+  }, [currentIdx, quiz.questions])
+
+  // Navigation helpers
   const currentQuestion = quiz.questions[currentIdx]
   const totalQuestions = quiz.questions.length
-  const progress = ((currentIdx + 1) / totalQuestions) * 100
-  
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60)
-    const s = seconds % 60
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+
+  const handleNext = () => {
+    if (currentIdx < totalQuestions - 1) {
+      setCurrentIdx((prev) => prev + 1)
+    }
   }
 
-  const isUrgent = timeLeft < 60 // Less than 1 minute
+  const handlePrevious = () => {
+    if (currentIdx > 0) {
+      setCurrentIdx((prev) => prev - 1)
+    }
+  }
+
+  const toggleMarkForReview = () => {
+    if (!currentQuestion) return
+    const qId = currentQuestion.id
+    setMarkedForReview((prev) => ({
+      ...prev,
+      [qId]: !prev[qId]
+    }))
+  }
+
+  const selectAnswer = (letter: string) => {
+    if (!currentQuestion) return
+    const qId = currentQuestion.id
+    setAnswers((prev) => ({
+      ...prev,
+      [qId]: letter
+    }))
+  }
+
+  // Timer Breakdown
+  const hours = Math.floor(timeLeft / 3600)
+  const minutes = Math.floor((timeLeft % 3600) / 60)
+  const seconds = timeLeft % 60
+  const isUrgent = timeLeft < 300 // less than 5 minutes
+
+  // Question Sections Grouping
+  const quantCount = Math.max(1, Math.ceil(totalQuestions / 2))
+  const quantQuestions = quiz.questions.slice(0, quantCount)
+  const verbalQuestions = quiz.questions.slice(quantCount)
+
+  // Current Question Information
+  const isQuant = currentIdx < quantCount
+  const sectionName = isQuant ? "Quant" : "Verbal"
+  const sectionQuestionNum = isQuant ? currentIdx + 1 : currentIdx - quantCount + 1
+
+  // Status mapping for navigation grids
+  const getQuestionStatus = (idx: number) => {
+    const q = quiz.questions[idx]
+    if (!q) return "unvisited"
+    if (idx === currentIdx) return "current"
+    if (markedForReview[q.id]) return "marked"
+    if (answers[q.id]) return "answered"
+    if (visited[q.id]) return "skipped"
+    return "unvisited"
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "current":
+        return "bg-indigo-600 text-white border-2 border-indigo-700 ring-2 ring-indigo-300/50"
+      case "marked":
+        return "bg-amber-500 text-white border-2 border-amber-600 hover:bg-amber-600"
+      case "answered":
+        return "bg-emerald-600 text-white border-2 border-emerald-700 hover:bg-emerald-700"
+      case "skipped":
+        return "bg-red-500 text-white border-2 border-red-600 hover:bg-red-600"
+      case "unvisited":
+      default:
+        return "bg-slate-200 text-slate-700 border border-slate-300 hover:bg-slate-300"
+    }
+  }
+
+  if (totalQuestions === 0) {
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-50 flex items-center justify-center p-6 text-center">
+        <div>
+          <AlertTriangle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-slate-700">No Questions</h2>
+          <p className="text-slate-500 text-sm mt-1">This quiz does not contain any questions.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const isMarked = !!markedForReview[currentQuestion.id]
 
   return (
-    <div className="space-y-6">
-      {/* ⏱️ Sticky Timer Header */}
-      <div className={`sticky top-4 z-30 flex items-center justify-between p-4 rounded-2xl border-2 shadow-lg transition-all ${
-        isUrgent ? "bg-red-50 border-red-500 animate-pulse" : "bg-white border-slate-200"
-      }`}>
-        <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-full ${isUrgent ? "bg-red-500 text-white" : "bg-blue-100 text-blue-600"}`}>
-            <Clock className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">Time Remaining</p>
-            <p className={`text-2xl font-mono font-black ${isUrgent ? "text-red-600" : "text-slate-800"}`}>
-              {formatTime(timeLeft)}
-            </p>
-          </div>
-        </div>
+    <div className="fixed inset-0 z-50 bg-slate-100 flex flex-col w-screen h-screen overflow-hidden text-slate-900 select-none">
+      {/* 1. Centered Header Bar */}
+      <header className="h-14 bg-slate-200 border-b border-slate-300 flex items-center justify-center px-6 shrink-0 shadow-sm relative">
+        <h1 className="text-base font-bold text-slate-800 tracking-wide">
+          Online Test - {quiz.title}
+        </h1>
         {isUrgent && (
-          <div className="hidden md:flex items-center gap-2 text-red-600 font-bold text-sm">
+          <div className="absolute right-4 hidden md:flex items-center gap-1.5 text-red-600 text-xs font-bold animate-pulse">
             <AlertTriangle className="h-4 w-4" />
-            Hurry up!
+            Hurry Up!
           </div>
         )}
-      </div>
+      </header>
 
-      {/* Progress Bar */}
-      <div className="space-y-2">
-        <div className="flex justify-between text-xs font-bold text-slate-500">
-          <span>QUESTION {currentIdx + 1} OF {totalQuestions}</span>
-          <span>{Math.round(progress)}% COMPLETE</span>
-        </div>
-        <Progress value={progress} className="h-2 bg-slate-100" />
-      </div>
-
-      {/* Question Card */}
-      <Card className="border-none shadow-2xl overflow-hidden bg-white">
-        <CardHeader className="p-8 bg-slate-50/50 border-b">
-          <CardTitle className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
-            {currentQuestion.question}
-          </CardTitle>
-        </CardHeader>
+      {/* 2. Main Dashboard Split-Screen Content */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         
-        <CardContent className="p-8 space-y-6">
-          <RadioGroup 
-            value={answers[currentQuestion.id] || ""} 
-            onValueChange={(val) => setAnswers({...answers, [currentQuestion.id]: val})}
-            className="grid gap-4"
-          >
-            {(['A', 'B', 'C', 'D'] as const).map((letter) => {
-              const optionKey = `option${letter}` as keyof Question
-              const isSelected = answers[currentQuestion.id] === letter
+        {/* Left Column: Test Workspace */}
+        <div className="flex-1 flex flex-col h-full overflow-hidden bg-white">
+          <div className="flex-1 overflow-y-auto p-6 md:p-10 space-y-6">
+            
+            {/* Workspace Question Header */}
+            <div className="text-sm font-bold text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
+              <span>{sectionName} - Question {sectionQuestionNum}</span>
+              {isMarked && (
+                <span className="bg-amber-100 text-amber-800 text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-amber-200 font-extrabold animate-pulse">
+                  Review Requested
+                </span>
+              )}
+            </div>
+            
+            {/* Question Body */}
+            <div className="text-lg md:text-xl text-slate-800 font-medium leading-relaxed whitespace-pre-wrap">
+              {currentQuestion.question}
+            </div>
+            
+            {/* Options List */}
+            <div className="space-y-4 max-w-3xl pt-4">
+              {(['A', 'B', 'C', 'D'] as const).map((letter) => {
+                const optionKey = `option${letter}` as keyof Question
+                const isSelected = answers[currentQuestion.id] === letter
 
-              return (
-                <div key={letter}>
-                  <RadioGroupItem value={letter} id={`${currentQuestion.id}-${letter}`} className="sr-only" />
-                  <Label 
-                    htmlFor={`${currentQuestion.id}-${letter}`} 
-                    className={`flex items-center space-x-4 p-5 rounded-2xl border-2 cursor-pointer transition-all ${
-                      isSelected 
-                      ? "border-blue-600 bg-blue-50 ring-2 ring-blue-600/20" 
-                      : "border-slate-100 hover:border-slate-300 hover:bg-slate-50"
+                return (
+                  <button
+                    key={letter}
+                    type="button"
+                    onClick={() => selectAnswer(letter)}
+                    className={`w-full flex items-center p-4 rounded-xl border-2 transition-all group ${
+                      isSelected
+                        ? "border-emerald-600 bg-emerald-50/30 text-emerald-950 font-semibold shadow-sm"
+                        : "border-slate-100 hover:border-slate-300 hover:bg-slate-50/50 text-slate-700"
                     }`}
                   >
-                    <div className={`h-10 w-10 shrink-0 flex items-center justify-center rounded-xl border-2 font-black transition-colors ${
-                      isSelected ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-400"
+                    {/* Checkbox indicator */}
+                    <div className={`w-5 h-5 rounded border mr-4 flex items-center justify-center transition-all ${
+                      isSelected
+                        ? "border-emerald-600 bg-emerald-600 text-white"
+                        : "border-slate-300 bg-white group-hover:border-slate-400"
                     }`}>
-                      {letter}
+                      {isSelected && <Check className="w-3.5 h-3.5 stroke-[3.5]" />}
                     </div>
-                    <span className={`text-lg font-medium ${isSelected ? "text-blue-900" : "text-slate-700"}`}>
+                    
+                    {/* Letter block */}
+                    <span className={`text-sm font-black mr-2 transition-colors ${isSelected ? "text-emerald-700" : "text-slate-400 group-hover:text-slate-500"}`}>
+                      {letter}.
+                    </span>
+                    
+                    {/* Option Text */}
+                    <span className="text-sm md:text-base text-left flex-1 leading-normal">
                       {currentQuestion[optionKey]}
                     </span>
-                  </Label>
-                </div>
-              )
-            })}
-          </RadioGroup>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
-          {/* Navigation */}
-          <div className="flex items-center justify-between pt-8 mt-6 border-t border-slate-100">
-            <Button 
-              variant="ghost" 
-              onClick={() => setCurrentIdx(prev => prev - 1)} 
-              disabled={currentIdx === 0 || submitting}
-              className="font-bold"
-            >
-              <ChevronLeft className="h-5 w-5 mr-1" /> Previous
-            </Button>
-            
-            {currentIdx === totalQuestions - 1 ? (
-              <Button 
-                onClick={() => finishQuiz(false)} 
-                disabled={submitting} 
-                className="bg-green-600 hover:bg-green-700 text-white px-10 h-12 rounded-xl font-bold shadow-lg shadow-green-200"
+          {/* Sticky Bottom Action Footer */}
+          <div className="h-16 bg-slate-100 border-t border-slate-200 px-6 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={toggleMarkForReview}
+                className={`text-xs md:text-sm font-bold px-4 py-2.5 rounded transition-all shadow-sm ${
+                  isMarked
+                    ? "bg-slate-700 hover:bg-slate-800 text-white"
+                    : "bg-rose-700 hover:bg-rose-800 text-white"
+                }`}
               >
-                {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "Submit Quiz"}
-              </Button>
-            ) : (
-              <Button 
-                onClick={() => setCurrentIdx(prev => prev + 1)} 
-                disabled={!answers[currentQuestion.id]}
-                className="bg-blue-600 hover:bg-blue-700 px-10 h-12 rounded-xl font-bold shadow-lg shadow-blue-200"
+                {isMarked ? "Unmark Review" : "Mark for Review"}
+              </button>
+              <button
+                type="button"
+                onClick={handlePrevious}
+                disabled={currentIdx === 0}
+                className="text-xs md:text-sm font-bold px-4 py-2.5 rounded bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed transition-all shadow-sm"
               >
-                Next <ChevronRight className="h-5 w-5 ml-1" />
-              </Button>
+                Previous
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={currentIdx === totalQuestions - 1}
+                className="text-xs md:text-sm font-bold px-4 py-2.5 rounded bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-300 disabled:text-slate-400 disabled:cursor-not-allowed transition-all shadow-sm"
+              >
+                Next
+              </button>
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => finishQuiz(false)}
+                disabled={submitting}
+                className="text-xs md:text-sm font-bold px-6 py-2.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
+              >
+                {submitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <span>Submit Test</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Sidebar Dashboard */}
+        <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-slate-200 flex flex-col h-full bg-slate-50 shrink-0">
+          
+          {/* Section 1: Time Left Countdown */}
+          <div className="p-4 border-b border-slate-200 text-center bg-white shadow-sm">
+            <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-2">
+              Time Left
+            </div>
+            <div className="flex justify-center items-center gap-3">
+              <div className="text-center w-12">
+                <span className={`text-2xl font-mono font-bold block ${isUrgent ? "text-red-600" : "text-slate-800"}`}>
+                  {String(hours).padStart(2, '0')}
+                </span>
+                <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">
+                  Hours
+                </span>
+              </div>
+              <span className="text-xl font-bold text-slate-300 mb-4">:</span>
+              <div className="text-center w-12">
+                <span className={`text-2xl font-mono font-bold block ${isUrgent ? "text-red-600" : "text-slate-800"}`}>
+                  {String(minutes).padStart(2, '0')}
+                </span>
+                <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">
+                  Minutes
+                </span>
+              </div>
+              <span className="text-xl font-bold text-slate-300 mb-4">:</span>
+              <div className="text-center w-12">
+                <span className={`text-2xl font-mono font-bold block ${isUrgent ? "text-red-600" : "text-slate-800"}`}>
+                  {String(seconds).padStart(2, '0')}
+                </span>
+                <span className="text-[9px] text-slate-400 uppercase font-bold tracking-wider">
+                  seconds
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2 & 3: Collapsible or clear Question Navigation Palettes */}
+          <div className="flex-1 overflow-y-auto bg-slate-50/50">
+            {/* Quant palette */}
+            {quantQuestions.length > 0 && (
+              <div className="border-b border-slate-200">
+                <div className="bg-slate-200 text-slate-700 text-[10px] font-bold py-1.5 text-center uppercase tracking-widest">
+                  Quant
+                </div>
+                <div className="grid grid-cols-5 gap-2 p-4 justify-items-center">
+                  {quantQuestions.map((q, qIdx) => {
+                    const globalIdx = qIdx
+                    const status = getQuestionStatus(globalIdx)
+                    const statusColor = getStatusColor(status)
+                    
+                    return (
+                      <button
+                        key={q.id}
+                        type="button"
+                        onClick={() => setCurrentIdx(globalIdx)}
+                        className={`w-9 h-9 flex items-center justify-center font-bold text-xs rounded transition-all shadow-sm ${statusColor}`}
+                      >
+                        {qIdx + 1}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Verbal palette */}
+            {verbalQuestions.length > 0 && (
+              <div className="border-b border-slate-200">
+                <div className="bg-slate-200 text-slate-700 text-[10px] font-bold py-1.5 text-center uppercase tracking-widest">
+                  Verbal
+                </div>
+                <div className="grid grid-cols-5 gap-2 p-4 justify-items-center">
+                  {verbalQuestions.map((q, qIdx) => {
+                    const globalIdx = quantCount + qIdx
+                    const status = getQuestionStatus(globalIdx)
+                    const statusColor = getStatusColor(status)
+                    
+                    return (
+                      <button
+                        key={q.id}
+                        type="button"
+                        onClick={() => setCurrentIdx(globalIdx)}
+                        className={`w-9 h-9 flex items-center justify-center font-bold text-xs rounded transition-all shadow-sm ${statusColor}`}
+                      >
+                        {qIdx + 1}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
             )}
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Section 4: Legend Key Footer */}
+          <div className="p-4 border-t border-slate-200 bg-white grid grid-cols-2 gap-2.5 text-[9px] font-black text-slate-500 tracking-wider uppercase shrink-0">
+            <div className="flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 rounded-sm bg-indigo-600 border border-indigo-700 inline-block shadow-sm"></span>
+              <span>Current</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 rounded-sm bg-slate-200 border border-slate-300 inline-block shadow-sm"></span>
+              <span>Not Visited</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 rounded-sm bg-emerald-600 border border-emerald-700 inline-block shadow-sm"></span>
+              <span>Answered</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3.5 h-3.5 rounded-sm bg-red-500 border border-red-600 inline-block shadow-sm"></span>
+              <span>Not Answered</span>
+            </div>
+            <div className="flex items-center gap-1.5 col-span-2 justify-center pt-2 border-t border-slate-100 mt-1">
+              <span className="w-3.5 h-3.5 rounded-sm bg-amber-500 border border-amber-600 inline-block shadow-sm"></span>
+              <span>Review Requested</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
