@@ -46,13 +46,12 @@ export async function PUT(
     }
 
     const quiz = await prisma.quiz.findUnique({
-      where: { id },
-      select: { isLocked: true }
-    })
+  where: { id }
+})
 
-    if (!quiz) {
-      return NextResponse.json({ error: "Mock Test not found" }, { status: 404 })
-    }
+if (!quiz) {
+  return NextResponse.json({ error: "Mock Test not found" }, { status: 404 })
+}
 
     await prisma.$transaction([
       prisma.quiz.update({

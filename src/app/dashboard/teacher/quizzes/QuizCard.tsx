@@ -48,11 +48,7 @@ export default function QuizCard({
                 🟢 Active
               </Badge>
             )}
-            {quiz.isLocked && (
-              <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30 hover:bg-amber-500/15 font-bold uppercase text-[9px] select-none">
-                🔒 Locked
-              </Badge>
-            )}
+
           </div>
         </div>
       </CardHeader>

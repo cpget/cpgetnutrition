@@ -52,10 +52,7 @@ export async function POST(
           answers: answers, // CRITICAL: Save this for the Review Page
         },
       })
-      await tx.quiz.update({
-        where: { id: quizId },
-        data: { isLocked: true },
-      })
+      // No update needed here since isLocked has been removed.
       return att
     })
 
