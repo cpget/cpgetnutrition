@@ -88,8 +88,45 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
         </Button>
       </Link>
 
-      {/* Modern Dashboard-Style Hero Score Header */}
       <Card className="overflow-hidden border-none shadow-xl bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 text-white relative">
+        <CardContent className="pt-10 pb-10 flex flex-col md:flex-row items-center justify-between gap-8 px-8 relative z-10">
+          <div className="space-y-3 text-center md:text-left">
+            <span className="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase">
+              Performance Review
+            </span>
+            <h1 className="text-4xl font-black tracking-tight">Quiz Completed!</h1>
+            <p className="text-indigo-200 text-sm max-w-md">
+              Review your submission below. Correct metrics, tab-switch history, and incorrect choices are detailed here.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full md:w-auto">
+            <div className="bg-white/5 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center min-w-[140px]">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Score</p>
+              <p className="text-2xl font-bold text-white">{attempt.score} / {quiz.questions.length}</p>
+            </div>
+            <div className="bg-white/5 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center min-w-[140px]">
+              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Accuracy</p>
+              <p className="text-2xl font-bold text-teal-400 flex items-center justify-center gap-1">
+                <Percent className="h-5 w-5" /> {scorePercentage}%
+              </p>
+            </div>
+            {(() => {
+              const switchCount = rawAnswers?._metadata?.tabSwitchCount ?? 0;
+              return switchCount > 0 ? (
+                <div className="bg-red-500/20 backdrop-blur-md p-4 rounded-xl border border-red-500/30 text-center min-w-[140px]">
+                  <p className="text-xs text-red-300 font-medium uppercase tracking-wider mb-1">Tab Switches</p>
+                  <p className="text-2xl font-bold text-red-400">{switchCount}</p>
+                </div>
+              ) : (
+                <div className="bg-white/5 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center min-w-[140px]">
+                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Tab Switches</p>
+                  <p className="text-2xl font-bold text-slate-300">0</p>
+                </div>
+              );
+            })()}
+          </div>
+        </CardContent>
 
         {quiz.isActive && rank !== null && (
           <div className="bg-white/5 border-t border-white/10 px-8 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-left text-sm font-medium">
