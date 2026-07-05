@@ -90,30 +90,6 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
 
       {/* Modern Dashboard-Style Hero Score Header */}
       <Card className="overflow-hidden border-none shadow-xl bg-gradient-to-br from-slate-900 via-indigo-950 to-blue-900 text-white relative">
-        <CardContent className="pt-10 pb-10 flex flex-col md:flex-row items-center justify-between gap-8 px-8 relative z-10">
-          <div className="space-y-3 text-center md:text-left">
-            <span className="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase">
-              Performance Review
-            </span>
-            <h1 className="text-4xl font-black tracking-tight">Quiz Completed!</h1>
-            <p className="text-indigo-200 text-sm max-w-md">
-              Review your submission below. Correct metrics and incorrect traps are highlighted to aid your study.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 w-full md:w-auto">
-            <div className="bg-white/5 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center min-w-[140px]">
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Score</p>
-              <p className="text-2xl font-bold text-white">{attempt.score} / {quiz.questions.length}</p>
-            </div>
-            <div className="bg-white/5 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center min-w-[140px]">
-              <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Accuracy</p>
-              <p className="text-2xl font-bold text-teal-400 flex items-center justify-center gap-1">
-                <Percent className="h-5 w-5" /> {scorePercentage}%
-              </p>
-            </div>
-          </div>
-        </CardContent>
 
         {quiz.isActive && rank !== null && (
           <div className="bg-white/5 border-t border-white/10 px-8 py-4 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center sm:text-left text-sm font-medium">
@@ -133,22 +109,21 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
       {/* Questions Review */}
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-slate-900">Review Answers</h2>
-        
+
         {quiz.questions.map((q, idx) => {
           const studentSelection = studentSelections[q.id];
           const isMarkedForReview = !!markedReviewSelections[q.id];
           const isCorrectSubmission = studentSelection === q.answer;
 
           return (
-            <Card 
-              key={q.id} 
-              className={`overflow-hidden border-l-4 transition-all duration-200 ${
-                !studentSelection
-                  ? "border-l-slate-300" 
-                  : isCorrectSubmission 
-                    ? "border-l-emerald-500 shadow-sm" 
+            <Card
+              key={q.id}
+              className={`overflow-hidden border-l-4 transition-all duration-200 ${!studentSelection
+                  ? "border-l-slate-300"
+                  : isCorrectSubmission
+                    ? "border-l-emerald-500 shadow-sm"
                     : "border-l-rose-500 shadow-sm"
-              }`}
+                }`}
             >
               <CardHeader className="bg-slate-50/60 py-4">
                 <CardTitle className="text-base font-semibold leading-relaxed text-slate-800 flex items-start gap-2">
@@ -161,7 +136,7 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
                   )}
                 </CardTitle>
               </CardHeader>
-              
+
               <CardContent className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                 {(['A', 'B', 'C', 'D'] as const).map((letter) => {
                   const isSystemCorrectOption = q.answer === letter;
@@ -192,8 +167,8 @@ export default async function QuizResultPage({ params }: { params: Promise<{ id:
                   }
 
                   return (
-                    <div 
-                      key={letter} 
+                    <div
+                      key={letter}
                       className={`flex items-center gap-3 p-3.5 rounded-xl border text-sm transition-colors ${cardStyle}`}
                     >
                       <span className={`w-6 h-6 flex items-center justify-center rounded-full text-[11px] font-bold shrink-0 ${badgeStyle}`}>
