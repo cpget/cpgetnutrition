@@ -205,15 +205,8 @@ export default function QuizPlayer({ quiz, duration }: { quiz: Quiz, duration: n
     return `${String(totalMins).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
   }
 
-  // Question Sections Grouping
-  const quantCount = Math.max(1, Math.ceil(totalQuestions / 2))
-  const quantQuestions = quiz.questions.slice(0, quantCount)
-  const verbalQuestions = quiz.questions.slice(quantCount)
-
-  // Current Question Information
-  const isQuant = currentIdx < quantCount
-  const sectionName = isQuant ? "Quant" : "Verbal"
-  const sectionQuestionNum = isQuant ? currentIdx + 1 : currentIdx - quantCount + 1
+// Current Question Information
+const sectionQuestionNum = currentIdx + 1
 
   // Status mapping for navigation grids
   const getQuestionStatus = (idx: number) => {
@@ -299,7 +292,7 @@ export default function QuizPlayer({ quiz, duration }: { quiz: Quiz, duration: n
             
             {/* Workspace Question Header */}
             <div className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-wider pb-2 border-b border-slate-100 flex items-center justify-between">
-              <span>{sectionName} - Question {sectionQuestionNum}</span>
+              <span>Question {sectionQuestionNum}</span>
               <div className="flex gap-2">
                 {tabSwitchCount > 0 && (
                   <span className="bg-red-100 text-red-800 text-[10px] px-2 py-0.5 rounded border border-red-200 font-extrabold">
@@ -468,69 +461,35 @@ export default function QuizPlayer({ quiz, duration }: { quiz: Quiz, duration: n
             </div>
           </div>
 
-          {/* Section 2 & 3: Collapsible or clear Question Navigation Palettes */}
-          <div className="flex-1 overflow-y-auto bg-slate-50/50">
-            {/* Quant palette */}
-            {quantQuestions.length > 0 && (
-              <div className="border-b border-slate-200">
-                <div className="bg-slate-200 text-slate-700 text-[10px] font-bold py-1.5 text-center uppercase tracking-widest">
-                  Quant
-                </div>
-                <div className="grid grid-cols-5 gap-2.5 p-4 justify-items-center">
-                  {quantQuestions.map((q, qIdx) => {
-                    const globalIdx = qIdx
-                    const status = getQuestionStatus(globalIdx)
-                    const statusColor = getStatusColor(status)
-                    
-                    return (
-                      <button
-                        key={q.id}
-                        type="button"
-                        onClick={() => {
-                          setCurrentIdx(globalIdx)
-                          setSidebarOpen(false) // Close mobile drawer when selection is made
-                        }}
-                        className={`w-9 h-9 flex items-center justify-center font-bold text-xs rounded transition-all shadow-sm ${statusColor}`}
-                      >
-                        {qIdx + 1}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+          {/* Question Palette */}
+<div className="flex-1 overflow-y-auto bg-slate-50/50">
+  <div className="border-b border-slate-200">
+    <div className="bg-slate-200 text-slate-700 text-[10px] font-bold py-1.5 text-center uppercase tracking-widest">
+      Questions
+    </div>
 
-            {/* Verbal palette */}
-            {verbalQuestions.length > 0 && (
-              <div className="border-b border-slate-200">
-                <div className="bg-slate-200 text-slate-700 text-[10px] font-bold py-1.5 text-center uppercase tracking-widest">
-                  Verbal
-                </div>
-                <div className="grid grid-cols-5 gap-2.5 p-4 justify-items-center">
-                  {verbalQuestions.map((q, qIdx) => {
-                    const globalIdx = quantCount + qIdx
-                    const status = getQuestionStatus(globalIdx)
-                    const statusColor = getStatusColor(status)
-                    
-                    return (
-                      <button
-                        key={q.id}
-                        type="button"
-                        onClick={() => {
-                          setCurrentIdx(globalIdx)
-                          setSidebarOpen(false) // Close mobile drawer when selection is made
-                        }}
-                        className={`w-9 h-9 flex items-center justify-center font-bold text-xs rounded transition-all shadow-sm ${statusColor}`}
-                      >
-                        {qIdx + 1}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
+    <div className="grid grid-cols-5 gap-2.5 p-4 justify-items-center">
+      {quiz.questions.map((q, index) => {
+        const status = getQuestionStatus(index)
+        const statusColor = getStatusColor(status)
 
+        return (
+          <button
+            key={q.id}
+            type="button"
+            onClick={() => {
+              setCurrentIdx(index)
+              setSidebarOpen(false)
+            }}
+            className={`w-9 h-9 flex items-center justify-center font-bold text-xs rounded transition-all shadow-sm ${statusColor}`}
+          >
+            {index + 1}
+          </button>
+        )
+      })}
+    </div>
+  </div>
+</div>
           {/* Section 4: Legend Key Footer */}
           <div className="p-4 border-t border-slate-200 bg-white grid grid-cols-2 gap-2.5 text-[9px] font-black text-slate-500 tracking-wider uppercase shrink-0">
             <div className="flex items-center gap-1.5">
